@@ -21,6 +21,9 @@ from app.models.word_definition import WordDefinition
 from app.models.word_etymology import WordEtymology
 from app.models.word_media import WordMedia, MediaType
 
+# Note: CEFR levels and difficulty_level should be pre-calculated in generated_seed_data.json
+# Use update_seed_data_with_cefr.py to update the JSON file before seeding
+
 # Vocabulary Categories with nested sub-categories
 VOCAB_CATEGORIES = {
     "Human Personality & Character": [
@@ -499,9 +502,62 @@ async def seed_data():
         print("\nSeeding completed successfully!")
 
 
-async def seed_generated_words(session: AsyncSession, generated_words: List[Dict]):
-    """Seed words from generated seed data JSON."""
+async def delete_all_words(session: AsyncSession):
+    """Delete all existing words and their related data."""
+    from sqlalchemy import delete as sql_delete
+    from app.models.user_word_progress import UserWordProgress
+    from app.models.daily_word_stack import DailyWordStack
+    from app.models.quiz_sessions import QuizSession
     
+    print("\n🗑️  Deleting all existing words and related data...")
+    
+    # Delete in order: child tables first, then parent
+    # This avoids foreign key constraint issues
+    
+    # Delete user progress
+    result = await session.execute(sql_delete(UserWordProgress))
+    deleted_progress = result.rowcount
+    print(f"  - Deleted {deleted_progress} user progress records")
+    
+    # Delete daily stacks
+    result = await session.execute(sql_delete(DailyWordStack))
+    deleted_stacks = result.rowcount
+    print(f"  - Deleted {deleted_stacks} daily stack entries")
+    
+    # Delete quiz sessions
+    result = await session.execute(sql_delete(QuizSession))
+    deleted_quizzes = result.rowcount
+    print(f"  - Deleted {deleted_quizzes} quiz sessions")
+    
+    # Delete word media
+    result = await session.execute(sql_delete(WordMedia))
+    deleted_media = result.rowcount
+    print(f"  - Deleted {deleted_media} word media records")
+    
+    # Delete word etymology
+    result = await session.execute(sql_delete(WordEtymology))
+    deleted_etymology = result.rowcount
+    print(f"  - Deleted {deleted_etymology} etymology records")
+    
+    # Delete word definitions
+    result = await session.execute(sql_delete(WordDefinition))
+    deleted_definitions = result.rowcount
+    print(f"  - Deleted {deleted_definitions} word definitions")
+    
+    # Finally, delete all words
+    result = await session.execute(sql_delete(Word))
+    deleted_words = result.rowcount
+    print(f"  - Deleted {deleted_words} words")
+    
+    await session.commit()
+    print(f"\n✅ Successfully deleted all words and related data")
+    return deleted_words
+
+
+async def seed_generated_words(session: AsyncSession, generated_words: List[Dict]):
+    """Seed words from generated seed data JSON.
+    Assumes CEFR levels and difficulty_level are already in the JSON file.
+    """
     for word_data in generated_words:
         word_text = word_data.get("word")
         if not word_text:
@@ -556,16 +612,31 @@ async def seed_generated_words(session: AsyncSession, generated_words: List[Dict
         except ValueError:
             tone = Tone.NEUTRAL
         
+        # Get CEFR level from JSON (should be pre-calculated)
+        cefr_level = word_data.get("cefr_level")
+        
+        # Get difficulty_level from JSON (should be pre-calculated in 1-10 scale)
+        difficulty_level = float(word_data.get("difficulty_level", 5.0))
+        # Ensure it's in 1-10 range
+        if difficulty_level > 10:
+            difficulty_level = difficulty_level / 10.0
+        elif difficulty_level < 1:
+            difficulty_level = 5.0  # Default
+        
+        # Get CEFR level from JSON (should be pre-calculated)
+        cefr_level = word_data.get("cefr_level")
+        
         # Create word
         word = Word(
             word=word_text,
             category_id=category_id,
-            difficulty_level=float(word_data.get("difficulty_level", 5.0)),
+            difficulty_level=difficulty_level,  # Already in 1-10 scale
             importance_score=int(word_data.get("importance_score", 50)),
             part_of_speech=word_data.get("parts_of_speech", []),
             pronunciation=word_data.get("pronunciation"),
             source=WordSource(word_data.get("source", "Curated")),
-            tone=tone
+            tone=tone,
+            cefr_level=cefr_level
         )
         session.add(word)
         await session.flush()
@@ -617,11 +688,70 @@ async def seed_generated_words(session: AsyncSession, generated_words: List[Dict
             )
             session.add(word_media)
         
-        print(f"  ✅ Created word: {word_text}")
+        if cefr_level:
+            print(f"  ✅ Created word: {word_text} (CEFR: {cefr_level}, Difficulty: {difficulty_level:.1f})")
+        else:
+            print(f"  ✅ Created word: {word_text} (No CEFR, Difficulty: {difficulty_level:.1f})")
     
     await session.commit()
     print(f"\n✅ Seeded {len(generated_words)} words from generated data")
 
 
+async def delete_and_reseed():
+    """Delete all existing words and reseed from generated_seed_data.json"""
+    print("=" * 60)
+    print("🔄 Delete All Words and Reseed from Generated Data")
+    print("=" * 60)
+    
+    # Create database connection
+    engine = create_async_engine(
+        settings.database_url.replace("postgresql://", "postgresql+asyncpg://"),
+        echo=False
+    )
+    async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    
+    async with async_session() as session:
+        # Step 1: Delete all existing words
+        await delete_all_words(session)
+        
+        # Step 2: Load generated seed data
+        generated_data_file = Path(__file__).parent / "generated_seed_data.json"
+        if not generated_data_file.exists():
+            print(f"\n❌ Generated seed data file not found: {generated_data_file}")
+            print("   Please run generate_seed_data.py first")
+            return
+        
+        print(f"\n📖 Loading generated seed data from {generated_data_file}...")
+        with open(generated_data_file, 'r', encoding='utf-8') as f:
+            generated_words = json.load(f)
+        
+        print(f"  ✓ Loaded {len(generated_words)} words")
+        
+        # Step 3: Ensure categories exist
+        print("\n📚 Ensuring categories exist...")
+        await seed_vocab_categories(session)
+        
+        # Step 4: Seed words from generated data
+        print(f"\n🌱 Seeding {len(generated_words)} words from generated data...")
+        await seed_generated_words(session, generated_words)
+        
+        print("\n" + "=" * 60)
+        print("✅ Reseeding completed successfully!")
+        print("=" * 60)
+
+
 if __name__ == "__main__":
-    asyncio.run(seed_data())
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Seed VocabMaster database')
+    parser.add_argument(
+        '--delete-and-reseed',
+        action='store_true',
+        help='Delete all existing words and reseed from generated_seed_data.json'
+    )
+    args = parser.parse_args()
+    
+    if args.delete_and_reseed:
+        asyncio.run(delete_and_reseed())
+    else:
+        asyncio.run(seed_data())

@@ -103,7 +103,8 @@ async def get_word(
         difficulty_level=float(word.difficulty_level),
         importance_score=word.importance_score,
         source=word.source.value,
-        tone=word.tone.value.lower() if word.tone else "neutral"
+        tone=word.tone.value.lower() if word.tone else "neutral",
+        cefr_level=word.cefr_level
     )
 
 
@@ -209,7 +210,8 @@ async def create_word_endpoint(
         difficulty_level=float(word.difficulty_level),
         importance_score=word.importance_score,
         source=word.source.value,
-        tone=word.tone.value.lower() if word.tone else "neutral"
+        tone=word.tone.value.lower() if word.tone else "neutral",
+        cefr_level=word.cefr_level
     )
 
 

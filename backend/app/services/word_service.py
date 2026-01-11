@@ -97,7 +97,8 @@ async def get_word_for_review_page(db: AsyncSession, word_id: int) -> Optional[d
             "id": word.category.id,
             "name": word.category.name
         } if word.category else None,
-        "tone": word.tone.value.lower() if word.tone else "neutral"
+        "tone": word.tone.value.lower() if word.tone else "neutral",
+        "cefr_level": word.cefr_level
     }
 
 
@@ -116,7 +117,8 @@ async def create_word(
     part_of_speech: List[str] = None,
     pronunciation: Optional[str] = None,
     source: str = "User",
-    tone: Tone = Tone.NEUTRAL
+    tone: Tone = Tone.NEUTRAL,
+    cefr_level: Optional[str] = None
 ) -> Word:
     """Create a new word."""
     from app.models.word import WordSource
@@ -129,7 +131,8 @@ async def create_word(
         part_of_speech=part_of_speech or [],
         pronunciation=pronunciation,
         source=WordSource(source),
-        tone=tone
+        tone=tone,
+        cefr_level=cefr_level
     )
     db.add(new_word)
     await db.commit()
@@ -170,6 +173,9 @@ async def create_word_with_ai(
     except ValueError:
         tone = Tone.NEUTRAL
     
+    # Get CEFR level from AI details (should be pre-calculated in JSON)
+    cefr_level = ai_details.get("cefr_level")
+    
     # Create the word
     new_word = Word(
         word=word,
@@ -179,7 +185,8 @@ async def create_word_with_ai(
         part_of_speech=ai_details.get("parts_of_speech", []),
         pronunciation=ai_details.get("pronunciation"),
         source=WordSource.USER,
-        tone=tone
+        tone=tone,
+        cefr_level=cefr_level
     )
     db.add(new_word)
     await db.flush()  # Flush to get the word ID

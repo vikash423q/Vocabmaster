@@ -30,6 +30,7 @@ class Word(Base):
     pronunciation = Column(String, nullable=True)
     source = Column(Enum(WordSource), default=WordSource.CURATED, nullable=False)
     tone = Column(Enum(Tone), default=Tone.NEUTRAL, nullable=False)
+    cefr_level = Column(String, nullable=True)  # A1, A2, B1, B2, C1, C2
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships

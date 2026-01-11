@@ -12,6 +12,7 @@ class WordBase(BaseModel):
     part_of_speech: List[str] = []
     pronunciation: Optional[str] = None
     tone: Tone = Tone.NEUTRAL
+    cefr_level: Optional[str] = None  # A1, A2, B1, B2, C1, C2
 
 
 class WordCreate(WordBase):
@@ -77,6 +78,7 @@ class WordDetail(BaseModel):
     importance_score: int
     source: str
     tone: str
+    cefr_level: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -90,6 +92,7 @@ class WordListItem(BaseModel):
     difficulty_level: float
     importance_score: int
     tone: str
+    cefr_level: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -104,3 +107,4 @@ class ReviewPageData(BaseModel):
     media: List[MediaSchema] = []
     category: Optional[CategorySchema] = None
     tone: str
+    cefr_level: Optional[str] = None
