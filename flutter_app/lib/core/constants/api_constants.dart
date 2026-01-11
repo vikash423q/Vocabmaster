@@ -1,5 +1,5 @@
 class ApiConstants {
-  static const String baseUrl = 'http://localhost:8000';
+  static const String baseUrl = 'https://vocabapi.vikashgaurav.com';
   static const String apiPrefix = '/api';
   
   // Auth

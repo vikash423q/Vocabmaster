@@ -70,7 +70,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: _selectedLevel,
+                    initialValue: _selectedLevel,
                     decoration: const InputDecoration(labelText: 'Level'),
                     items: ['beginner', 'intermediate', 'advanced']
                         .map((level) => DropdownMenuItem(

@@ -1,8 +1,8 @@
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_, and_
+from sqlalchemy import select, or_, and_, delete
 from sqlalchemy.orm import selectinload
-from app.models.word import Word
+from app.models.word import Word, Tone
 from app.models.category import Category
 from app.models.word_definition import WordDefinition
 from app.models.word_etymology import WordEtymology
@@ -96,7 +96,8 @@ async def get_word_for_review_page(db: AsyncSession, word_id: int) -> Optional[d
         "category": {
             "id": word.category.id,
             "name": word.category.name
-        } if word.category else None
+        } if word.category else None,
+        "tone": word.tone.value.lower() if word.tone else "neutral"
     }
 
 
@@ -114,7 +115,8 @@ async def create_word(
     importance_score: int = 50,
     part_of_speech: List[str] = None,
     pronunciation: Optional[str] = None,
-    source: str = "User"
+    source: str = "User",
+    tone: Tone = Tone.NEUTRAL
 ) -> Word:
     """Create a new word."""
     from app.models.word import WordSource
@@ -126,9 +128,127 @@ async def create_word(
         importance_score=importance_score,
         part_of_speech=part_of_speech or [],
         pronunciation=pronunciation,
-        source=WordSource(source)
+        source=WordSource(source),
+        tone=tone
     )
     db.add(new_word)
     await db.commit()
     await db.refresh(new_word)
     return new_word
+
+
+async def create_word_with_ai(
+    db: AsyncSession,
+    word: str,
+    ai_details: dict
+) -> Word:
+    """Create a new word with AI-generated details."""
+    from app.models.word import WordSource
+    from app.models.word_definition import WordDefinition
+    from app.models.word_etymology import WordEtymology
+    
+    # Get or create a default "General" category
+    category_query = select(Category).where(Category.name.ilike("General")).limit(1)
+    category_result = await db.execute(category_query)
+    category = category_result.scalar_one_or_none()
+    
+    if not category:
+        # Create a default "General" category if it doesn't exist
+        category = Category(
+            name="General",
+            description="General vocabulary words",
+            importance_weight=5.0
+        )
+        db.add(category)
+        await db.flush()
+    
+    # Parse tone from AI details, default to NEUTRAL
+    # AI returns lowercase, but database enum uses uppercase
+    tone_str = ai_details.get("tone", "neutral").upper()
+    try:
+        tone = Tone(tone_str)
+    except ValueError:
+        tone = Tone.NEUTRAL
+    
+    # Create the word
+    new_word = Word(
+        word=word,
+        category_id=category.id,
+        difficulty_level=float(ai_details.get("difficulty_level", 5.0)),
+        importance_score=int(ai_details.get("importance_score", 50)),
+        part_of_speech=ai_details.get("parts_of_speech", []),
+        pronunciation=ai_details.get("pronunciation"),
+        source=WordSource.USER,
+        tone=tone
+    )
+    db.add(new_word)
+    await db.flush()  # Flush to get the word ID
+    
+    # Create definitions
+    definitions = ai_details.get("definitions", [])
+    for idx, def_data in enumerate(definitions):
+        definition = WordDefinition(
+            word_id=new_word.id,
+            definition=def_data.get("text", ""),
+            example_sentence=def_data.get("example"),
+            is_primary=def_data.get("is_primary", idx == 0),
+            order_index=idx
+        )
+        db.add(definition)
+    
+    # Create etymology if available
+    etymology_data = ai_details.get("etymology", {})
+    if etymology_data and (etymology_data.get("origin_language") or etymology_data.get("root_word") or etymology_data.get("evolution")):
+        etymology = WordEtymology(
+            word_id=new_word.id,
+            origin_language=etymology_data.get("origin_language"),
+            root_word=etymology_data.get("root_word"),
+            evolution_story=etymology_data.get("evolution")
+        )
+        db.add(etymology)
+    
+    await db.commit()
+    await db.refresh(new_word)
+    
+    # Reload with relationships
+    return await get_word_by_id(db, new_word.id)
+
+
+async def delete_word(
+    db: AsyncSession,
+    word_id: int
+) -> bool:
+    """Delete a word. Only allows deletion of user-generated words."""
+    from app.models.word import WordSource
+    from sqlalchemy import delete as sql_delete
+    
+    # Load word to check source
+    word = await get_word_by_id(db, word_id)
+    if not word:
+        raise ValueError("Word not found")
+    
+    # Only allow deletion of user-generated words
+    if word.source != WordSource.USER:
+        raise ValueError("Only user-generated words can be deleted")
+    
+    # Manually delete related records first to avoid foreign key constraint issues
+    # Delete in order: child tables first, then parent
+    from app.models.word_definition import WordDefinition
+    from app.models.word_etymology import WordEtymology
+    from app.models.word_media import WordMedia
+    from app.models.user_word_progress import UserWordProgress
+    from app.models.daily_word_stack import DailyWordStack
+    from app.models.quiz_sessions import QuizSession
+    
+    # Delete all related records
+    await db.execute(sql_delete(WordDefinition).where(WordDefinition.word_id == word_id))
+    await db.execute(sql_delete(WordEtymology).where(WordEtymology.word_id == word_id))
+    await db.execute(sql_delete(WordMedia).where(WordMedia.word_id == word_id))
+    await db.execute(sql_delete(UserWordProgress).where(UserWordProgress.word_id == word_id))
+    await db.execute(sql_delete(DailyWordStack).where(DailyWordStack.word_id == word_id))
+    await db.execute(sql_delete(QuizSession).where(QuizSession.word_id == word_id))
+    
+    # Now delete the word itself
+    await db.execute(sql_delete(Word).where(Word.id == word_id))
+    await db.commit()
+    return True

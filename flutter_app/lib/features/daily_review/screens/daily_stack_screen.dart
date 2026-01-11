@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/daily_review_bloc.dart';
-import '../../../core/models/progress.dart';
 import '../../../../app/app_router.dart';
 
 class DailyStackScreen extends StatelessWidget {

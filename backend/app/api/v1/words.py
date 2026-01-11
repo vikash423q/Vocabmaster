@@ -1,17 +1,23 @@
 from fastapi import APIRouter, Depends, Query, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from typing import List, Optional
+import httpx
 from app.database import get_db
-from app.schemas.word import WordCreate, WordDetail, WordListItem, ReviewPageData, CategorySchema
+from app.schemas.word import WordCreate, WordCreateSimple, WordDetail, WordListItem, ReviewPageData, CategorySchema
 from app.services.word_service import (
     get_words,
     get_word_by_id,
     get_word_for_review_page,
     get_categories,
-    create_word
+    create_word,
+    create_word_with_ai,
+    delete_word
 )
 from app.api.dependencies import get_current_user
 from app.models.user import User
+from app.models.word import Word
+from app.config import settings
 
 router = APIRouter()
 
@@ -96,7 +102,8 @@ async def get_word(
         } if word.category else None,
         difficulty_level=float(word.difficulty_level),
         importance_score=word.importance_score,
-        source=word.source.value
+        source=word.source.value,
+        tone=word.tone.value.lower() if word.tone else "neutral"
     )
 
 
@@ -117,24 +124,125 @@ async def get_review_page(
 
 @router.post("", response_model=WordDetail, status_code=status.HTTP_201_CREATED)
 async def create_word_endpoint(
-    word_data: WordCreate,
+    word_data: WordCreateSimple,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Add a custom word."""
-    word = await create_word(
-        db=db,
-        word=word_data.word,
-        category_id=word_data.category_id,
-        difficulty_level=word_data.difficulty_level,
-        importance_score=word_data.importance_score,
-        part_of_speech=word_data.part_of_speech,
-        pronunciation=word_data.pronunciation,
-        source=word_data.source
-    )
+    """Add a custom word. AI will generate definitions, etymology, pronunciation, and other details."""
+    # Check if word already exists
+    existing_query = select(Word).where(Word.word.ilike(word_data.word))
+    existing_result = await db.execute(existing_query)
+    existing = existing_result.scalar_one_or_none()
     
-    # Return word detail
-    return await get_word(word.id, db)
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Word '{word_data.word}' already exists"
+        )
+    
+    # Call AI service to generate word details
+    try:
+        async with httpx.AsyncClient() as client:
+            ai_response = await client.post(
+                f"{settings.ai_agent_service_url}/generate-word-details",
+                json={"word": word_data.word},
+                timeout=60.0
+            )
+            ai_response.raise_for_status()
+            ai_details = ai_response.json()
+    except httpx.HTTPError as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"AI service error: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating word details: {str(e)}"
+        )
+    
+    # Create word with AI-generated details
+    try:
+        word = await create_word_with_ai(db, word_data.word, ai_details)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating word: {str(e)}"
+        )
+    
+    # Format and return word detail (same format as get_word endpoint)
+    return WordDetail(
+        id=word.id,
+        word=word.word,
+        pronunciation=word.pronunciation,
+        parts_of_speech=word.part_of_speech or [],
+        definitions=[
+            {
+                "text": d.definition,
+                "is_primary": d.is_primary,
+                "examples": [d.example_sentence] if d.example_sentence else []
+            }
+            for d in sorted(word.definitions, key=lambda x: (not x.is_primary, x.order_index))
+        ],
+        etymology={
+            "origin_language": word.etymology.origin_language if word.etymology else None,
+            "root_word": word.etymology.root_word if word.etymology else None,
+            "evolution": word.etymology.evolution_story if word.etymology else None
+        } if word.etymology else None,
+        media=[
+            {
+                "type": m.media_type.value,
+                "url": m.url,
+                "source": m.source,
+                "caption": m.caption,
+                "is_ai_generated": m.is_ai_generated
+            }
+            for m in word.media
+        ],
+        category={
+            "id": word.category.id,
+            "name": word.category.name,
+            "description": word.category.description,
+            "parent_category_id": word.category.parent_category_id,
+            "importance_weight": float(word.category.importance_weight)
+        } if word.category else None,
+        difficulty_level=float(word.difficulty_level),
+        importance_score=word.importance_score,
+        source=word.source.value,
+        tone=word.tone.value.lower() if word.tone else "neutral"
+    )
+
+
+@router.delete("/{word_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_word_endpoint(
+    word_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Delete a user-generated word. Only user-generated words can be deleted."""
+    # Check if word exists
+    word = await get_word_by_id(db, word_id)
+    if not word:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Word not found"
+        )
+    
+    # Try to delete (will raise ValueError if not user-generated)
+    try:
+        await delete_word(db, word_id)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error deleting word: {str(e)}"
+        )
+    
+    return {"message": "Word deleted successfully"}
 
 
 @router.get("/categories/list", response_model=List[CategorySchema])

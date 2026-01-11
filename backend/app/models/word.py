@@ -12,6 +12,12 @@ class WordSource(str, enum.Enum):
     CURATED = "Curated"
 
 
+class Tone(str, enum.Enum):
+    POSITIVE = "POSITIVE"
+    NEGATIVE = "NEGATIVE"
+    NEUTRAL = "NEUTRAL"
+
+
 class Word(Base):
     __tablename__ = "words"
 
@@ -23,6 +29,7 @@ class Word(Base):
     part_of_speech = Column(JSON, default=[])  # Array of strings
     pronunciation = Column(String, nullable=True)
     source = Column(Enum(WordSource), default=WordSource.CURATED, nullable=False)
+    tone = Column(Enum(Tone), default=Tone.NEUTRAL, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships

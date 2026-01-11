@@ -1,5 +1,6 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator, field_serializer
 from typing import Optional
+from datetime import datetime
 
 
 class UserRegister(BaseModel):
@@ -12,6 +13,8 @@ class UserRegister(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+    # Note: Password validation is handled in verify_password function
+    # to allow compatibility with any password length (truncated to 72 bytes)
 
 
 class Token(BaseModel):
@@ -24,9 +27,16 @@ class UserProfile(BaseModel):
     email: str
     username: str
     current_level: str
-    created_at: str
-    last_active: Optional[str] = None
+    created_at: datetime
+    last_active: Optional[datetime] = None
     settings: dict = {}
+
+    @field_serializer('created_at', 'last_active')
+    def serialize_datetime(self, value: Optional[datetime], _info) -> Optional[str]:
+        """Serialize datetime to ISO format string."""
+        if value is None:
+            return None
+        return value.isoformat()
 
     class Config:
         from_attributes = True

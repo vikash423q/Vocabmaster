@@ -26,10 +26,18 @@ class ComprehensiveReviewScreen extends StatelessWidget {
                     expandedHeight: 200,
                     pinned: true,
                     flexibleSpace: FlexibleSpaceBar(
-                      title: Text(data.word),
-                      subtitle: data.pronunciation != null
-                          ? Text(data.pronunciation!)
-                          : null,
+                      title: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(data.word),
+                          if (data.pronunciation != null)
+                            Text(
+                              data.pronunciation!,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                   // Primary Definition

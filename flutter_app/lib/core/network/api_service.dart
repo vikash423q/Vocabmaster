@@ -1,83 +1,173 @@
 import 'package:dio/dio.dart';
-import 'package:retrofit/retrofit.dart';
 import '../models/models.dart';
 import '../constants/api_constants.dart';
 
-part 'api_service.g.dart';
+class ApiService {
+  final Dio _dio;
 
-@RestApi()
-abstract class ApiService {
-  factory ApiService(Dio dio) = _ApiService;
+  ApiService(this._dio);
 
   // Auth
-  @POST(ApiConstants.register)
-  Future<UserProfile> register(@Body() UserRegister request);
+  Future<UserProfile> register(UserRegister request) async {
+    final response = await _dio.post(
+      ApiConstants.register,
+      data: request.toJson(),
+    );
+    return UserProfile.fromJson(response.data);
+  }
 
-  @POST(ApiConstants.login)
-  Future<TokenResponse> login(@Body() UserLogin request);
+  Future<TokenResponse> login(UserLogin request) async {
+    final response = await _dio.post(
+      ApiConstants.login,
+      data: request.toJson(),
+    );
+    return TokenResponse.fromJson(response.data);
+  }
 
-  @POST(ApiConstants.logout)
-  Future<void> logout();
+  Future<void> logout() async {
+    await _dio.post(ApiConstants.logout);
+  }
 
   // User
-  @GET(ApiConstants.userProfile)
-  Future<UserProfile> getProfile();
+  Future<UserProfile> getProfile() async {
+    final response = await _dio.get(ApiConstants.userProfile);
+    return UserProfile.fromJson(response.data);
+  }
 
-  @PATCH(ApiConstants.userProfile)
-  Future<UserProfile> updateProfile(@Body() UserProfileUpdate request);
+  Future<UserProfile> updateProfile(UserProfileUpdate request) async {
+    final response = await _dio.patch(
+      ApiConstants.userProfile,
+      data: request.toJson(),
+    );
+    return UserProfile.fromJson(response.data);
+  }
 
-  @GET(ApiConstants.userStats)
-  Future<UserStats> getStats();
+  Future<UserStats> getStats() async {
+    final response = await _dio.get(ApiConstants.userStats);
+    return UserStats.fromJson(response.data);
+  }
 
   // Words
-  @GET(ApiConstants.words)
-  Future<List<WordListItem>> getWords(@Queries() Map<String, dynamic> queries);
+  Future<List<WordListItem>> getWords(Map<String, dynamic> queries) async {
+    final response = await _dio.get(
+      ApiConstants.words,
+      queryParameters: queries,
+    );
+    return (response.data as List)
+        .map((json) => WordListItem.fromJson(json))
+        .toList();
+  }
 
-  @GET('${ApiConstants.words}/{id}')
-  Future<WordDetail> getWord(@Path('id') int id);
+  Future<WordDetail> getWord(int id) async {
+    final response = await _dio.get(ApiConstants.wordDetail(id));
+    return WordDetail.fromJson(response.data);
+  }
 
-  @GET('${ApiConstants.words}/{id}/review-page')
-  Future<ReviewPageData> getReviewPage(@Path('id') int id);
+  Future<ReviewPageData> getReviewPage(int id) async {
+    final response = await _dio.get(ApiConstants.wordReviewPage(id));
+    return ReviewPageData.fromJson(response.data);
+  }
 
-  @POST(ApiConstants.words)
-  Future<WordDetail> createWord(@Body() WordCreate request);
+  Future<WordDetail> createWord(WordCreate request) async {
+    final response = await _dio.post(
+      ApiConstants.words,
+      data: request.toJson(),
+    );
+    return WordDetail.fromJson(response.data);
+  }
 
-  @GET(ApiConstants.categories)
-  Future<List<Category>> getCategories();
+  Future<List<Category>> getCategories() async {
+    final response = await _dio.get(ApiConstants.categories);
+    return (response.data as List)
+        .map((json) => Category.fromJson(json))
+        .toList();
+  }
 
   // Review
-  @GET(ApiConstants.dailyStack)
-  Future<List<DailyStackItem>> getDailyStack(@Query('target_date') String? date);
+  Future<List<DailyStackItem>> getDailyStack(String? date) async {
+    final response = await _dio.get(
+      ApiConstants.dailyStack,
+      queryParameters: date != null ? {'target_date': date} : null,
+    );
+    return (response.data as List)
+        .map((json) => DailyStackItem.fromJson(json))
+        .toList();
+  }
 
-  @POST(ApiConstants.addWords)
-  Future<AddWordsResponse> addWords(@Body() AddWordsRequest request);
+  Future<AddWordsResponse> addWords(AddWordsRequest request) async {
+    final response = await _dio.post(
+      ApiConstants.addWords,
+      data: request.toJson(),
+    );
+    return AddWordsResponse.fromJson(response.data);
+  }
 
-  @POST(ApiConstants.submitReview)
-  Future<ReviewResponse> submitReview(@Body() ReviewSubmit request);
+  Future<ReviewResponse> submitReview(ReviewSubmit request) async {
+    final response = await _dio.post(
+      ApiConstants.submitReview,
+      data: request.toJson(),
+    );
+    return ReviewResponse.fromJson(response.data);
+  }
 
-  @GET(ApiConstants.upcomingReviews)
-  Future<List<UpcomingReview>> getUpcomingReviews(@Query('days_ahead') int days);
+  Future<List<UpcomingReview>> getUpcomingReviews(int days) async {
+    final response = await _dio.get(
+      ApiConstants.upcomingReviews,
+      queryParameters: {'days_ahead': days},
+    );
+    return (response.data as List)
+        .map((json) => UpcomingReview.fromJson(json))
+        .toList();
+  }
 
-  @GET(ApiConstants.progressOverview)
-  Future<UserStats> getProgressOverview();
+  Future<UserStats> getProgressOverview() async {
+    final response = await _dio.get(ApiConstants.progressOverview);
+    return UserStats.fromJson(response.data);
+  }
 
-  @GET('${ApiConstants.progressOverview}/word/{id}')
-  Future<WordProgressDetail> getWordProgress(@Path('id') int id);
+  Future<WordProgressDetail> getWordProgress(int id) async {
+    final response = await _dio.get(ApiConstants.wordProgress(id));
+    return WordProgressDetail.fromJson(response.data);
+  }
 
   // AI
-  @POST(ApiConstants.generateQuiz)
-  Future<QuizResponse> generateQuiz(@Body() QuizGenerateRequest request);
+  Future<QuizResponse> generateQuiz(QuizGenerateRequest request) async {
+    final response = await _dio.post(
+      ApiConstants.generateQuiz,
+      data: request.toJson(),
+    );
+    return QuizResponse.fromJson(response.data);
+  }
 
-  @POST(ApiConstants.explainWord)
-  Future<ExplainResponse> explainWord(@Body() ExplainRequest request);
+  Future<ExplainResponse> explainWord(ExplainRequest request) async {
+    final response = await _dio.post(
+      ApiConstants.explainWord,
+      data: request.toJson(),
+    );
+    return ExplainResponse.fromJson(response.data);
+  }
 
-  @POST(ApiConstants.generateStory)
-  Future<StoryResponse> generateStory(@Body() StoryGenerateRequest request);
+  Future<StoryResponse> generateStory(StoryGenerateRequest request) async {
+    final response = await _dio.post(
+      ApiConstants.generateStory,
+      data: request.toJson(),
+    );
+    return StoryResponse.fromJson(response.data);
+  }
 
-  @POST(ApiConstants.chat)
-  Future<ChatResponse> chat(@Body() ChatRequest request);
+  Future<ChatResponse> chat(ChatRequest request) async {
+    final response = await _dio.post(
+      ApiConstants.chat,
+      data: request.toJson(),
+    );
+    return ChatResponse.fromJson(response.data);
+  }
 
   // Media
-  @GET('${ApiConstants.words}/{id}/media')
-  Future<List<MediaItem>> getWordMedia(@Path('id') int id);
+  Future<List<MediaItem>> getWordMedia(int id) async {
+    final response = await _dio.get(ApiConstants.wordMedia(id));
+    return (response.data as List)
+        .map((json) => MediaItem.fromJson(json))
+        .toList();
+  }
 }

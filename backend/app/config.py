@@ -4,14 +4,14 @@ from typing import Optional
 
 class Settings(BaseSettings):
     # Database
-    database_url: str
+    database_url: str = "postgresql://vocabuser:vocabpass@localhost:5432/vocabmaster"
     db_password: Optional[str] = None
     
     # Redis
     redis_url: str = "redis://localhost:6379/0"
     
     # JWT
-    jwt_secret: str
+    jwt_secret: str = "dev-secret-key-change-in-production"
     jwt_algorithm: str = "HS256"
     jwt_expiration_hours: int = 24
     

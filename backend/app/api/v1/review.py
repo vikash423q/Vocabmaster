@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, and_
 from datetime import date
 from typing import List, Optional
 from app.database import get_db
@@ -19,6 +20,8 @@ from app.services.spaced_repetition_service import (
 )
 from app.services.progress_service import get_progress_overview, get_word_progress, get_upcoming_reviews
 from app.models.quiz_sessions import QuizSession, QuestionType
+from app.models.user_word_progress import UserWordProgress
+
 from app.api.dependencies import get_current_user
 from app.models.user import User
 
@@ -40,13 +43,29 @@ async def get_daily_stack_endpoint(
     # Get daily stack
     stack_items = await get_daily_stack(db, current_user.id, review_date)
     
+    if not stack_items:
+        return []
+    
+    # Get progress for all words in one query to include the level
+    word_ids = [item.word_id for item in stack_items]
+    progress_query = select(UserWordProgress).where(
+        and_(
+            UserWordProgress.user_id == current_user.id,
+            UserWordProgress.word_id.in_(word_ids)
+        )
+    )
+    progress_result = await db.execute(progress_query)
+    progress_records = {p.word_id: p for p in progress_result.scalars().all()}
+    
+    # Build response with progress levels
     return [
         DailyStackItem(
             id=item.id,
             word_id=item.word_id,
             word=item.word.word if item.word else "",
             scheduled_date=item.scheduled_date.isoformat(),
-            is_reviewed=item.is_reviewed
+            is_reviewed=item.is_reviewed,
+            level=progress_records[item.word_id].fibonacci_level if item.word_id in progress_records else 0
         )
         for item in stack_items
     ]

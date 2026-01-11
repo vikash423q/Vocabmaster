@@ -88,17 +88,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     CheckAuthStatus event,
     Emitter<AuthState> emit,
   ) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
-    
-    if (token != null) {
-      try {
-        final profile = await _apiService.getProfile();
-        emit(AuthAuthenticated(profile));
-      } catch (e) {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      
+      if (token != null) {
+        try {
+          final profile = await _apiService.getProfile();
+          emit(AuthAuthenticated(profile));
+        } catch (e) {
+          // Token invalid or API error - clear token and go to login
+          await prefs.remove('auth_token');
+          emit(AuthUnauthenticated());
+        }
+      } else {
         emit(AuthUnauthenticated());
       }
-    } else {
+    } catch (e) {
+      // If there's any error (e.g., API not available), go to login
       emit(AuthUnauthenticated());
     }
   }

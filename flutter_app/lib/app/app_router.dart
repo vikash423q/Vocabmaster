@@ -57,11 +57,71 @@ class AppRouter {
   }
 }
 
-// Placeholder screens
-class SplashScreen extends StatelessWidget {
+// Splash Screen with navigation logic
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
   @override
-  Widget build(BuildContext context) => const Scaffold(body: Center(child: Text('VocabMaster')));
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Add a small delay to ensure BLoC is ready, then check auth
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        final authBloc = context.read<AuthBloc>();
+        if (authBloc.state is AuthInitial) {
+          authBloc.add(CheckAuthStatus());
+        }
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is AuthAuthenticated) {
+          // Navigate to home if authenticated
+          Navigator.of(context).pushReplacementNamed(AppRouter.home);
+        } else if (state is AuthUnauthenticated || state is AuthError) {
+          // Navigate to login if not authenticated
+          Navigator.of(context).pushReplacementNamed(AppRouter.login);
+        }
+      },
+      child: Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'VocabMaster',
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
+              const CircularProgressIndicator(),
+              const SizedBox(height: 20),
+              BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, state) {
+                  if (state is AuthError) {
+                    return Text(
+                      'Error: ${state.message}',
+                      style: const TextStyle(color: Colors.red),
+                      textAlign: TextAlign.center,
+                    );
+                  }
+                  return const Text('Loading...');
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class HomeScreen extends StatelessWidget {

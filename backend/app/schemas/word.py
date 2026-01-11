@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
+from app.models.word_media import MediaType
+from app.models.word import Tone
 
 
 class WordBase(BaseModel):
@@ -9,10 +11,16 @@ class WordBase(BaseModel):
     importance_score: int = 50
     part_of_speech: List[str] = []
     pronunciation: Optional[str] = None
+    tone: Tone = Tone.NEUTRAL
 
 
 class WordCreate(WordBase):
     source: str = "User"
+
+
+class WordCreateSimple(BaseModel):
+    """Simple word creation - only requires the word, AI generates the rest."""
+    word: str
 
 
 class WordDefinitionSchema(BaseModel):
@@ -29,6 +37,16 @@ class EtymologySchema(BaseModel):
 
 class MediaSchema(BaseModel):
     type: str
+    url: str
+    source: Optional[str] = None
+    caption: Optional[str] = None
+    is_ai_generated: bool = False
+
+
+class MediaCreate(BaseModel):
+    """Request schema for creating media."""
+    word_id: int
+    media_type: MediaType
     url: str
     source: Optional[str] = None
     caption: Optional[str] = None
@@ -58,6 +76,7 @@ class WordDetail(BaseModel):
     difficulty_level: float
     importance_score: int
     source: str
+    tone: str
 
     class Config:
         from_attributes = True
@@ -70,6 +89,7 @@ class WordListItem(BaseModel):
     category_id: int
     difficulty_level: float
     importance_score: int
+    tone: str
 
     class Config:
         from_attributes = True
@@ -83,3 +103,4 @@ class ReviewPageData(BaseModel):
     etymology: Optional[EtymologySchema] = None
     media: List[MediaSchema] = []
     category: Optional[CategorySchema] = None
+    tone: str

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import update
 from app.database import get_db
@@ -6,6 +6,7 @@ from app.schemas.auth import UserProfile, UserProfileUpdate, UserStats
 from app.services.progress_service import get_progress_overview
 from app.api.dependencies import get_current_user
 from app.models.user import User, UserLevel
+from app.services.auth_service import get_user_by_username
 
 router = APIRouter()
 
@@ -25,6 +26,13 @@ async def update_profile(
     db: AsyncSession = Depends(get_db)
 ):
     """Update current user's profile."""
+    existing_user = await get_user_by_username(db, profile_update.username)
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already taken"
+        )
+
     if profile_update.username is not None:
         current_user.username = profile_update.username
     

@@ -17,8 +17,7 @@ dependencies:
 
   # Network
   dio: ^5.3.3
-  retrofit: ^4.0.3
-  json_annotation: ^4.8.1
+  json_annotation: ^4.9.0
 
   # Local Storage
   hive: ^2.2.3
@@ -26,8 +25,8 @@ dependencies:
 
   # Code Generation
   freezed: ^2.4.5
+  freezed_annotation: ^2.4.4
   json_serializable: ^6.7.1
-  retrofit_generator: ^8.0.4
   build_runner: ^2.4.7
 
   # Dependency Injection

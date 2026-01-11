@@ -4,6 +4,15 @@ from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 from app.agent import VocabularyAIAgent
 from app.config import settings
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG if settings.debug else logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="VocabMaster AI Agent Service",
@@ -49,6 +58,10 @@ class ChatRequest(BaseModel):
     message: str
 
 
+class GenerateWordDetailsRequest(BaseModel):
+    word: str
+
+
 @app.get("/")
 async def root():
     return {"message": "VocabMaster AI Agent Service", "version": "1.0.0"}
@@ -57,6 +70,35 @@ async def root():
 @app.get("/health")
 async def health():
     return {"status": "healthy"}
+
+
+@app.get("/test-llm")
+async def test_llm():
+    """Test LLM connection with a simple request."""
+    try:
+        # Simple test prompt
+        test_response = agent.chat(
+            word="test",
+            definition="a procedure intended to establish the quality, performance, or reliability of something",
+            message="Hello, can you respond?"
+        )
+        return {
+            "status": "success",
+            "provider": agent.provider,
+            "model": getattr(agent, "model", "N/A"),
+            "base_url": getattr(agent.client, "base_url", "N/A") if hasattr(agent.client, "base_url") else "N/A",
+            "response_preview": test_response[:100] if test_response else "No response"
+        }
+    except Exception as e:
+        import traceback
+        return {
+            "status": "error",
+            "provider": agent.provider,
+            "model": getattr(agent, "model", "N/A"),
+            "base_url": getattr(agent.client, "base_url", "N/A") if hasattr(agent.client, "base_url") else "N/A",
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }
 
 
 @app.post("/generate-quiz")
@@ -70,6 +112,10 @@ async def generate_quiz(request: QuizRequest):
         )
         return result
     except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"Error generating quiz: {str(e)}")
+        print(f"Traceback: {error_trace}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error generating quiz: {str(e)}"
@@ -125,4 +171,21 @@ async def chat(request: ChatRequest):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error in chat: {str(e)}"
+        )
+
+
+@app.post("/generate-word-details")
+async def generate_word_details(request: GenerateWordDetailsRequest):
+    """Generate comprehensive word details using AI."""
+    try:
+        result = agent.generate_word_details(word=request.word)
+        return result
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        logger.error(f"Error generating word details: {str(e)}")
+        logger.error(f"Traceback: {error_trace}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating word details: {str(e)}"
         )

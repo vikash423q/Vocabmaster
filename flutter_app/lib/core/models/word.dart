@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'category.dart';
 
 part 'word.freezed.dart';
 part 'word.g.dart';
@@ -34,8 +35,29 @@ class WordDetail with _$WordDetail {
     required String source,
   }) = _WordDetail;
 
-  factory WordDetail.fromJson(Map<String, dynamic> json) =>
-      _$WordDetailFromJson(json);
+  factory WordDetail.fromJson(Map<String, dynamic> json) {
+    return WordDetail(
+      id: json['id'] as int,
+      word: json['word'] as String,
+      pronunciation: json['pronunciation'] as String?,
+      partsOfSpeech: (json['parts_of_speech'] as List<dynamic>?)?.cast<String>() ?? [],
+      definitions: (json['definitions'] as List<dynamic>?)
+          ?.map((e) => WordDefinition.fromJson(e as Map<String, dynamic>))
+          .toList() ?? [],
+      etymology: json['etymology'] != null
+          ? Etymology.fromJson(json['etymology'] as Map<String, dynamic>)
+          : null,
+      media: (json['media'] as List<dynamic>?)
+          ?.map((e) => MediaItem.fromJson(e as Map<String, dynamic>))
+          .toList() ?? [],
+      category: json['category'] != null
+          ? Category.fromJson(json['category'] as Map<String, dynamic>)
+          : null,
+      difficultyLevel: (json['difficulty_level'] as num).toDouble(),
+      importanceScore: json['importance_score'] as int,
+      source: json['source'] as String,
+    );
+  }
 }
 
 @freezed

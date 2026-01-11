@@ -7,7 +7,8 @@ python-multipart==0.0.6
 sqlalchemy==2.0.23
 alembic==1.12.1
 asyncpg==0.29.0
-psycopg2-binary==2.9.9
+greenlet==3.0.3  # Required for SQLAlchemy async operations
+# psycopg2-binary==2.9.9  # Optional: install PostgreSQL dev tools or use Docker
 
 # Redis
 redis==5.0.1
@@ -21,9 +22,14 @@ python-multipart==0.0.6
 # Validation and serialization
 pydantic==2.5.0
 pydantic-settings==2.1.0
+email-validator>=2.1.1  # Required for EmailStr validation
 
 # HTTP client for AI service
 httpx==0.25.2
+requests==2.31.0
+
+# MinIO/S3 client
+minio==7.2.0
 
 # Environment variables
 python-dotenv==1.0.0

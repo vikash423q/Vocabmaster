@@ -25,15 +25,22 @@ app.include_router(user.router, prefix="/api/user", tags=["User"])
 app.include_router(words.router, prefix="/api/words", tags=["Words"])
 app.include_router(review.router, prefix="/api", tags=["Review"])
 app.include_router(ai.router, prefix="/api/ai", tags=["AI"])
-app.include_router(media.router, prefix="/api/words", tags=["Media"])
+app.include_router(media.router, prefix="/api/media", tags=["Media"])
 
 
 @app.on_event("startup")
 async def startup():
     # Create database tables (in production, use migrations)
+    # Only create tables if database is available
     if settings.environment == "development":
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+        try:
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+        except Exception as e:
+            # Database not available - log but don't fail startup
+            # This allows the API to start even if DB is temporarily unavailable
+            print(f"Warning: Could not create database tables: {e}")
+            print("Make sure PostgreSQL is running and accessible.")
 
 
 @app.get("/")

@@ -5,11 +5,16 @@ class ApiInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     // Add auth token if available
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
-    
-    if (token != null) {
-      options.headers['Authorization'] = 'Bearer $token';
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      
+      if (token != null) {
+        options.headers['Authorization'] = 'Bearer $token';
+      }
+    } catch (e) {
+      // Ignore SharedPreferences errors
+      print('Error getting auth token: $e');
     }
     
     return handler.next(options);
@@ -17,6 +22,14 @@ class ApiInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
+    // Log errors for debugging
+    print('API Error: ${err.message}');
+    print('URL: ${err.requestOptions.uri}');
+    if (err.response != null) {
+      print('Status: ${err.response?.statusCode}');
+      print('Response: ${err.response?.data}');
+    }
+    
     // Handle errors globally
     if (err.response?.statusCode == 401) {
       // Handle unauthorized - clear token and redirect to login

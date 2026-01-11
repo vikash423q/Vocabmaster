@@ -1,14 +1,15 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_serializer
 from typing import List, Optional, Dict, Any
-from datetime import date
+from datetime import date, datetime
 
 
 class DailyStackItem(BaseModel):
     id: int
     word_id: int
     word: str
-    scheduled_date: str
+    scheduled_date: str  # Already converted to ISO string in endpoint
     is_reviewed: bool
+    level: int  # Current Fibonacci level (0-11, where 0=new, 11=mastered)
 
     class Config:
         from_attributes = True
@@ -40,13 +41,13 @@ class WordProgressDetail(BaseModel):
     word_id: int
     word: Optional[str] = None
     fibonacci_level: int
-    next_review_date: Optional[str] = None
+    next_review_date: Optional[str] = None  # Already converted to ISO string in service
     correct_count: int
     incorrect_count: int
-    last_reviewed_at: Optional[str] = None
+    last_reviewed_at: Optional[str] = None  # Already converted to ISO string in service
     status: str
-    added_at: Optional[str] = None
-    mastered_at: Optional[str] = None
+    added_at: Optional[str] = None  # Already converted to ISO string in service
+    mastered_at: Optional[str] = None  # Already converted to ISO string in service
 
 
 class UpcomingReview(BaseModel):
