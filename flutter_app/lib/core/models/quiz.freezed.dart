@@ -20,6 +20,7 @@ QuizGenerateRequest _$QuizGenerateRequestFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$QuizGenerateRequest {
+  @JsonKey(name: 'word_id')
   int get wordId => throw _privateConstructorUsedError;
 
   /// Serializes this QuizGenerateRequest to a JSON map.
@@ -38,7 +39,7 @@ abstract class $QuizGenerateRequestCopyWith<$Res> {
           QuizGenerateRequest value, $Res Function(QuizGenerateRequest) then) =
       _$QuizGenerateRequestCopyWithImpl<$Res, QuizGenerateRequest>;
   @useResult
-  $Res call({int wordId});
+  $Res call({@JsonKey(name: 'word_id') int wordId});
 }
 
 /// @nodoc
@@ -75,7 +76,7 @@ abstract class _$$QuizGenerateRequestImplCopyWith<$Res>
       __$$QuizGenerateRequestImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({int wordId});
+  $Res call({@JsonKey(name: 'word_id') int wordId});
 }
 
 /// @nodoc
@@ -105,12 +106,14 @@ class __$$QuizGenerateRequestImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$QuizGenerateRequestImpl implements _QuizGenerateRequest {
-  const _$QuizGenerateRequestImpl({required this.wordId});
+  const _$QuizGenerateRequestImpl(
+      {@JsonKey(name: 'word_id') required this.wordId});
 
   factory _$QuizGenerateRequestImpl.fromJson(Map<String, dynamic> json) =>
       _$$QuizGenerateRequestImplFromJson(json);
 
   @override
+  @JsonKey(name: 'word_id')
   final int wordId;
 
   @override
@@ -148,13 +151,15 @@ class _$QuizGenerateRequestImpl implements _QuizGenerateRequest {
 }
 
 abstract class _QuizGenerateRequest implements QuizGenerateRequest {
-  const factory _QuizGenerateRequest({required final int wordId}) =
+  const factory _QuizGenerateRequest(
+          {@JsonKey(name: 'word_id') required final int wordId}) =
       _$QuizGenerateRequestImpl;
 
   factory _QuizGenerateRequest.fromJson(Map<String, dynamic> json) =
       _$QuizGenerateRequestImpl.fromJson;
 
   @override
+  @JsonKey(name: 'word_id')
   int get wordId;
 
   /// Create a copy of QuizGenerateRequest
@@ -172,6 +177,7 @@ QuizOption _$QuizOptionFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$QuizOption {
   String get text => throw _privateConstructorUsedError;
+  @JsonKey(name: 'is_correct')
   bool get isCorrect => throw _privateConstructorUsedError;
 
   /// Serializes this QuizOption to a JSON map.
@@ -190,7 +196,7 @@ abstract class $QuizOptionCopyWith<$Res> {
           QuizOption value, $Res Function(QuizOption) then) =
       _$QuizOptionCopyWithImpl<$Res, QuizOption>;
   @useResult
-  $Res call({String text, bool isCorrect});
+  $Res call({String text, @JsonKey(name: 'is_correct') bool isCorrect});
 }
 
 /// @nodoc
@@ -232,7 +238,7 @@ abstract class _$$QuizOptionImplCopyWith<$Res>
       __$$QuizOptionImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String text, bool isCorrect});
+  $Res call({String text, @JsonKey(name: 'is_correct') bool isCorrect});
 }
 
 /// @nodoc
@@ -267,7 +273,9 @@ class __$$QuizOptionImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$QuizOptionImpl implements _QuizOption {
-  const _$QuizOptionImpl({required this.text, this.isCorrect = false});
+  const _$QuizOptionImpl(
+      {required this.text,
+      @JsonKey(name: 'is_correct') this.isCorrect = false});
 
   factory _$QuizOptionImpl.fromJson(Map<String, dynamic> json) =>
       _$$QuizOptionImplFromJson(json);
@@ -275,7 +283,7 @@ class _$QuizOptionImpl implements _QuizOption {
   @override
   final String text;
   @override
-  @JsonKey()
+  @JsonKey(name: 'is_correct')
   final bool isCorrect;
 
   @override
@@ -315,7 +323,8 @@ class _$QuizOptionImpl implements _QuizOption {
 
 abstract class _QuizOption implements QuizOption {
   const factory _QuizOption(
-      {required final String text, final bool isCorrect}) = _$QuizOptionImpl;
+      {required final String text,
+      @JsonKey(name: 'is_correct') final bool isCorrect}) = _$QuizOptionImpl;
 
   factory _QuizOption.fromJson(Map<String, dynamic> json) =
       _$QuizOptionImpl.fromJson;
@@ -323,6 +332,7 @@ abstract class _QuizOption implements QuizOption {
   @override
   String get text;
   @override
+  @JsonKey(name: 'is_correct')
   bool get isCorrect;
 
   /// Create a copy of QuizOption
@@ -341,6 +351,7 @@ QuizResponse _$QuizResponseFromJson(Map<String, dynamic> json) {
 mixin _$QuizResponse {
   String get question => throw _privateConstructorUsedError;
   List<QuizOption> get options => throw _privateConstructorUsedError;
+  @JsonKey(name: 'correct_answer')
   String get correctAnswer => throw _privateConstructorUsedError;
   String? get explanation => throw _privateConstructorUsedError;
 
@@ -363,7 +374,7 @@ abstract class $QuizResponseCopyWith<$Res> {
   $Res call(
       {String question,
       List<QuizOption> options,
-      String correctAnswer,
+      @JsonKey(name: 'correct_answer') String correctAnswer,
       String? explanation});
 }
 
@@ -419,7 +430,7 @@ abstract class _$$QuizResponseImplCopyWith<$Res>
   $Res call(
       {String question,
       List<QuizOption> options,
-      String correctAnswer,
+      @JsonKey(name: 'correct_answer') String correctAnswer,
       String? explanation});
 }
 
@@ -468,7 +479,7 @@ class _$QuizResponseImpl implements _QuizResponse {
   const _$QuizResponseImpl(
       {required this.question,
       required final List<QuizOption> options,
-      required this.correctAnswer,
+      @JsonKey(name: 'correct_answer') required this.correctAnswer,
       this.explanation})
       : _options = options;
 
@@ -486,6 +497,7 @@ class _$QuizResponseImpl implements _QuizResponse {
   }
 
   @override
+  @JsonKey(name: 'correct_answer')
   final String correctAnswer;
   @override
   final String? explanation;
@@ -538,7 +550,7 @@ abstract class _QuizResponse implements QuizResponse {
   const factory _QuizResponse(
       {required final String question,
       required final List<QuizOption> options,
-      required final String correctAnswer,
+      @JsonKey(name: 'correct_answer') required final String correctAnswer,
       final String? explanation}) = _$QuizResponseImpl;
 
   factory _QuizResponse.fromJson(Map<String, dynamic> json) =
@@ -549,6 +561,7 @@ abstract class _QuizResponse implements QuizResponse {
   @override
   List<QuizOption> get options;
   @override
+  @JsonKey(name: 'correct_answer')
   String get correctAnswer;
   @override
   String? get explanation;
@@ -567,6 +580,7 @@ ExplainRequest _$ExplainRequestFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$ExplainRequest {
+  @JsonKey(name: 'word_id')
   int get wordId => throw _privateConstructorUsedError;
   String get question => throw _privateConstructorUsedError;
 
@@ -586,7 +600,7 @@ abstract class $ExplainRequestCopyWith<$Res> {
           ExplainRequest value, $Res Function(ExplainRequest) then) =
       _$ExplainRequestCopyWithImpl<$Res, ExplainRequest>;
   @useResult
-  $Res call({int wordId, String question});
+  $Res call({@JsonKey(name: 'word_id') int wordId, String question});
 }
 
 /// @nodoc
@@ -628,7 +642,7 @@ abstract class _$$ExplainRequestImplCopyWith<$Res>
       __$$ExplainRequestImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({int wordId, String question});
+  $Res call({@JsonKey(name: 'word_id') int wordId, String question});
 }
 
 /// @nodoc
@@ -663,12 +677,14 @@ class __$$ExplainRequestImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$ExplainRequestImpl implements _ExplainRequest {
-  const _$ExplainRequestImpl({required this.wordId, required this.question});
+  const _$ExplainRequestImpl(
+      {@JsonKey(name: 'word_id') required this.wordId, required this.question});
 
   factory _$ExplainRequestImpl.fromJson(Map<String, dynamic> json) =>
       _$$ExplainRequestImplFromJson(json);
 
   @override
+  @JsonKey(name: 'word_id')
   final int wordId;
   @override
   final String question;
@@ -711,13 +727,14 @@ class _$ExplainRequestImpl implements _ExplainRequest {
 
 abstract class _ExplainRequest implements ExplainRequest {
   const factory _ExplainRequest(
-      {required final int wordId,
+      {@JsonKey(name: 'word_id') required final int wordId,
       required final String question}) = _$ExplainRequestImpl;
 
   factory _ExplainRequest.fromJson(Map<String, dynamic> json) =
       _$ExplainRequestImpl.fromJson;
 
   @override
+  @JsonKey(name: 'word_id')
   int get wordId;
   @override
   String get question;
@@ -887,8 +904,11 @@ StoryGenerateRequest _$StoryGenerateRequestFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$StoryGenerateRequest {
-  List<int>? get wordIds => throw _privateConstructorUsedError;
+  @JsonKey(name: 'word_ids')
+  List<int> get wordIds => throw _privateConstructorUsedError;
+  @JsonKey(name: 'batch_size')
   int get batchSize => throw _privateConstructorUsedError;
+  @JsonKey(name: 'story_type')
   String get storyType => throw _privateConstructorUsedError;
 
   /// Serializes this StoryGenerateRequest to a JSON map.
@@ -907,7 +927,10 @@ abstract class $StoryGenerateRequestCopyWith<$Res> {
           $Res Function(StoryGenerateRequest) then) =
       _$StoryGenerateRequestCopyWithImpl<$Res, StoryGenerateRequest>;
   @useResult
-  $Res call({List<int>? wordIds, int batchSize, String storyType});
+  $Res call(
+      {@JsonKey(name: 'word_ids') List<int> wordIds,
+      @JsonKey(name: 'batch_size') int batchSize,
+      @JsonKey(name: 'story_type') String storyType});
 }
 
 /// @nodoc
@@ -926,15 +949,15 @@ class _$StoryGenerateRequestCopyWithImpl<$Res,
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? wordIds = freezed,
+    Object? wordIds = null,
     Object? batchSize = null,
     Object? storyType = null,
   }) {
     return _then(_value.copyWith(
-      wordIds: freezed == wordIds
+      wordIds: null == wordIds
           ? _value.wordIds
           : wordIds // ignore: cast_nullable_to_non_nullable
-              as List<int>?,
+              as List<int>,
       batchSize: null == batchSize
           ? _value.batchSize
           : batchSize // ignore: cast_nullable_to_non_nullable
@@ -955,7 +978,10 @@ abstract class _$$StoryGenerateRequestImplCopyWith<$Res>
       __$$StoryGenerateRequestImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({List<int>? wordIds, int batchSize, String storyType});
+  $Res call(
+      {@JsonKey(name: 'word_ids') List<int> wordIds,
+      @JsonKey(name: 'batch_size') int batchSize,
+      @JsonKey(name: 'story_type') String storyType});
 }
 
 /// @nodoc
@@ -971,15 +997,15 @@ class __$$StoryGenerateRequestImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? wordIds = freezed,
+    Object? wordIds = null,
     Object? batchSize = null,
     Object? storyType = null,
   }) {
     return _then(_$StoryGenerateRequestImpl(
-      wordIds: freezed == wordIds
+      wordIds: null == wordIds
           ? _value._wordIds
           : wordIds // ignore: cast_nullable_to_non_nullable
-              as List<int>?,
+              as List<int>,
       batchSize: null == batchSize
           ? _value.batchSize
           : batchSize // ignore: cast_nullable_to_non_nullable
@@ -996,27 +1022,28 @@ class __$$StoryGenerateRequestImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$StoryGenerateRequestImpl implements _StoryGenerateRequest {
   const _$StoryGenerateRequestImpl(
-      {final List<int>? wordIds, this.batchSize = 20, this.storyType = 'daily'})
+      {@JsonKey(name: 'word_ids') required final List<int> wordIds,
+      @JsonKey(name: 'batch_size') this.batchSize = 20,
+      @JsonKey(name: 'story_type') this.storyType = 'daily'})
       : _wordIds = wordIds;
 
   factory _$StoryGenerateRequestImpl.fromJson(Map<String, dynamic> json) =>
       _$$StoryGenerateRequestImplFromJson(json);
 
-  final List<int>? _wordIds;
+  final List<int> _wordIds;
   @override
-  List<int>? get wordIds {
-    final value = _wordIds;
-    if (value == null) return null;
+  @JsonKey(name: 'word_ids')
+  List<int> get wordIds {
     if (_wordIds is EqualUnmodifiableListView) return _wordIds;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
+    return EqualUnmodifiableListView(_wordIds);
   }
 
   @override
-  @JsonKey()
+  @JsonKey(name: 'batch_size')
   final int batchSize;
   @override
-  @JsonKey()
+  @JsonKey(name: 'story_type')
   final String storyType;
 
   @override
@@ -1061,18 +1088,22 @@ class _$StoryGenerateRequestImpl implements _StoryGenerateRequest {
 
 abstract class _StoryGenerateRequest implements StoryGenerateRequest {
   const factory _StoryGenerateRequest(
-      {final List<int>? wordIds,
-      final int batchSize,
-      final String storyType}) = _$StoryGenerateRequestImpl;
+          {@JsonKey(name: 'word_ids') required final List<int> wordIds,
+          @JsonKey(name: 'batch_size') final int batchSize,
+          @JsonKey(name: 'story_type') final String storyType}) =
+      _$StoryGenerateRequestImpl;
 
   factory _StoryGenerateRequest.fromJson(Map<String, dynamic> json) =
       _$StoryGenerateRequestImpl.fromJson;
 
   @override
-  List<int>? get wordIds;
+  @JsonKey(name: 'word_ids')
+  List<int> get wordIds;
   @override
+  @JsonKey(name: 'batch_size')
   int get batchSize;
   @override
+  @JsonKey(name: 'story_type')
   String get storyType;
 
   /// Create a copy of StoryGenerateRequest
@@ -1089,9 +1120,12 @@ StoryResponse _$StoryResponseFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$StoryResponse {
+  @JsonKey(name: 'story_id')
   int get storyId => throw _privateConstructorUsedError;
   String get narrative => throw _privateConstructorUsedError;
+  @JsonKey(name: 'word_ids')
   List<int> get wordIds => throw _privateConstructorUsedError;
+  @JsonKey(name: 'story_type')
   String get storyType => throw _privateConstructorUsedError;
 
   /// Serializes this StoryResponse to a JSON map.
@@ -1111,7 +1145,10 @@ abstract class $StoryResponseCopyWith<$Res> {
       _$StoryResponseCopyWithImpl<$Res, StoryResponse>;
   @useResult
   $Res call(
-      {int storyId, String narrative, List<int> wordIds, String storyType});
+      {@JsonKey(name: 'story_id') int storyId,
+      String narrative,
+      @JsonKey(name: 'word_ids') List<int> wordIds,
+      @JsonKey(name: 'story_type') String storyType});
 }
 
 /// @nodoc
@@ -1164,7 +1201,10 @@ abstract class _$$StoryResponseImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {int storyId, String narrative, List<int> wordIds, String storyType});
+      {@JsonKey(name: 'story_id') int storyId,
+      String narrative,
+      @JsonKey(name: 'word_ids') List<int> wordIds,
+      @JsonKey(name: 'story_type') String storyType});
 }
 
 /// @nodoc
@@ -1210,21 +1250,23 @@ class __$$StoryResponseImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$StoryResponseImpl implements _StoryResponse {
   const _$StoryResponseImpl(
-      {required this.storyId,
+      {@JsonKey(name: 'story_id') required this.storyId,
       required this.narrative,
-      required final List<int> wordIds,
-      required this.storyType})
+      @JsonKey(name: 'word_ids') required final List<int> wordIds,
+      @JsonKey(name: 'story_type') required this.storyType})
       : _wordIds = wordIds;
 
   factory _$StoryResponseImpl.fromJson(Map<String, dynamic> json) =>
       _$$StoryResponseImplFromJson(json);
 
   @override
+  @JsonKey(name: 'story_id')
   final int storyId;
   @override
   final String narrative;
   final List<int> _wordIds;
   @override
+  @JsonKey(name: 'word_ids')
   List<int> get wordIds {
     if (_wordIds is EqualUnmodifiableListView) return _wordIds;
     // ignore: implicit_dynamic_type
@@ -1232,6 +1274,7 @@ class _$StoryResponseImpl implements _StoryResponse {
   }
 
   @override
+  @JsonKey(name: 'story_type')
   final String storyType;
 
   @override
@@ -1275,21 +1318,25 @@ class _$StoryResponseImpl implements _StoryResponse {
 
 abstract class _StoryResponse implements StoryResponse {
   const factory _StoryResponse(
-      {required final int storyId,
-      required final String narrative,
-      required final List<int> wordIds,
-      required final String storyType}) = _$StoryResponseImpl;
+          {@JsonKey(name: 'story_id') required final int storyId,
+          required final String narrative,
+          @JsonKey(name: 'word_ids') required final List<int> wordIds,
+          @JsonKey(name: 'story_type') required final String storyType}) =
+      _$StoryResponseImpl;
 
   factory _StoryResponse.fromJson(Map<String, dynamic> json) =
       _$StoryResponseImpl.fromJson;
 
   @override
+  @JsonKey(name: 'story_id')
   int get storyId;
   @override
   String get narrative;
   @override
+  @JsonKey(name: 'word_ids')
   List<int> get wordIds;
   @override
+  @JsonKey(name: 'story_type')
   String get storyType;
 
   /// Create a copy of StoryResponse
@@ -1306,6 +1353,7 @@ ChatRequest _$ChatRequestFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$ChatRequest {
+  @JsonKey(name: 'word_id')
   int get wordId => throw _privateConstructorUsedError;
   String get message => throw _privateConstructorUsedError;
 
@@ -1325,7 +1373,7 @@ abstract class $ChatRequestCopyWith<$Res> {
           ChatRequest value, $Res Function(ChatRequest) then) =
       _$ChatRequestCopyWithImpl<$Res, ChatRequest>;
   @useResult
-  $Res call({int wordId, String message});
+  $Res call({@JsonKey(name: 'word_id') int wordId, String message});
 }
 
 /// @nodoc
@@ -1367,7 +1415,7 @@ abstract class _$$ChatRequestImplCopyWith<$Res>
       __$$ChatRequestImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({int wordId, String message});
+  $Res call({@JsonKey(name: 'word_id') int wordId, String message});
 }
 
 /// @nodoc
@@ -1402,12 +1450,14 @@ class __$$ChatRequestImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$ChatRequestImpl implements _ChatRequest {
-  const _$ChatRequestImpl({required this.wordId, required this.message});
+  const _$ChatRequestImpl(
+      {@JsonKey(name: 'word_id') required this.wordId, required this.message});
 
   factory _$ChatRequestImpl.fromJson(Map<String, dynamic> json) =>
       _$$ChatRequestImplFromJson(json);
 
   @override
+  @JsonKey(name: 'word_id')
   final int wordId;
   @override
   final String message;
@@ -1448,13 +1498,14 @@ class _$ChatRequestImpl implements _ChatRequest {
 
 abstract class _ChatRequest implements ChatRequest {
   const factory _ChatRequest(
-      {required final int wordId,
+      {@JsonKey(name: 'word_id') required final int wordId,
       required final String message}) = _$ChatRequestImpl;
 
   factory _ChatRequest.fromJson(Map<String, dynamic> json) =
       _$ChatRequestImpl.fromJson;
 
   @override
+  @JsonKey(name: 'word_id')
   int get wordId;
   @override
   String get message;

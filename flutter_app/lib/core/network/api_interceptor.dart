@@ -25,9 +25,16 @@ class ApiInterceptor extends Interceptor {
     // Log errors for debugging
     print('API Error: ${err.message}');
     print('URL: ${err.requestOptions.uri}');
+    print('Method: ${err.requestOptions.method}');
+    if (err.requestOptions.data != null) {
+      print('Request Data: ${err.requestOptions.data}');
+    }
     if (err.response != null) {
       print('Status: ${err.response?.statusCode}');
       print('Response: ${err.response?.data}');
+    } else {
+      print('No response received - network error');
+      print('Error type: ${err.type}');
     }
     
     // Handle errors globally

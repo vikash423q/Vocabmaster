@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Enum, JSON
+from sqlalchemy import Column, Integer, String, DateTime, Enum, JSON, Numeric
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 import enum
@@ -18,7 +18,7 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     username = Column(String, unique=True, index=True, nullable=False)
     password_hash = Column(String, nullable=False)
-    current_level = Column(Enum(UserLevel), default=UserLevel.BEGINNER, nullable=False)
+    current_level = Column(Numeric(3, 1), nullable=True)  # Float: 1.0-10.0, null = not assessed
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     last_active = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     settings = Column(JSON, default={})

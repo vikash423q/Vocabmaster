@@ -5,17 +5,26 @@ import '../features/auth/screens/register_screen.dart';
 import '../features/auth/bloc/auth_bloc.dart';
 import '../features/daily_review/screens/daily_stack_screen.dart';
 import '../features/word_detail/screens/comprehensive_review_screen.dart';
+import '../features/assessment/screens/assessment_screen.dart';
+import '../features/assessment/screens/stack_recommendation_screen.dart';
+import '../features/assessment/bloc/assessment_bloc.dart';
+import '../features/main_navigation/screens/main_navigation_screen.dart';
+import '../features/progress/screens/browse_words_screen.dart';
 
 class AppRouter {
   static const String splash = '/';
   static const String login = '/login';
   static const String register = '/register';
   static const String home = '/home';
+  static const String main = '/main';
+  static const String assessment = '/assessment';
+  static const String stackRecommendations = '/stack-recommendations';
   static const String dailyReview = '/daily-review';
   static const String wordDetail = '/word-detail';
   static const String addWords = '/add-words';
   static const String progress = '/progress';
   static const String guidedStory = '/guided-story';
+  static const String browseWords = '/browse-words';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -37,6 +46,21 @@ class AppRouter {
         );
       case home:
         return MaterialPageRoute(builder: (_) => const HomeScreen());
+      case main:
+        return MaterialPageRoute(builder: (_) => const MainNavigationScreen());
+      case assessment:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (_) => AssessmentBloc(),
+            child: const AssessmentScreen(),
+          ),
+        );
+      case stackRecommendations:
+        final args = settings.arguments as Map<String, dynamic>?;
+        final result = args?['result'];
+        return MaterialPageRoute(
+          builder: (_) => StackRecommendationScreen(result: result),
+        );
       case dailyReview:
         return MaterialPageRoute(builder: (_) => const DailyStackScreen());
       case wordDetail:
@@ -44,6 +68,11 @@ class AppRouter {
         final wordId = args?['wordId'] as int? ?? 0;
         return MaterialPageRoute(
           builder: (_) => ComprehensiveReviewScreen(wordId: wordId),
+        );
+      case browseWords:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => BrowseWordsScreen(arguments: args),
         );
       default:
         return MaterialPageRoute(
@@ -85,8 +114,14 @@ class _SplashScreenState extends State<SplashScreen> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          // Navigate to home if authenticated
-          Navigator.of(context).pushReplacementNamed(AppRouter.home);
+          // Check if user needs assessment (currentLevel is null)
+          if (state.user.currentLevel == null) {
+            // Navigate to assessment for first-time users
+            Navigator.of(context).pushReplacementNamed(AppRouter.assessment);
+          } else {
+            // Navigate to main app if already assessed
+            Navigator.of(context).pushReplacementNamed(AppRouter.main);
+          }
         } else if (state is AuthUnauthenticated || state is AuthError) {
           // Navigate to login if not authenticated
           Navigator.of(context).pushReplacementNamed(AppRouter.login);

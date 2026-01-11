@@ -5,7 +5,7 @@ from app.database import get_db
 from app.schemas.auth import UserProfile, UserProfileUpdate, UserStats
 from app.services.progress_service import get_progress_overview
 from app.api.dependencies import get_current_user
-from app.models.user import User, UserLevel
+from app.models.user import User
 from app.services.auth_service import get_user_by_username
 
 router = APIRouter()
@@ -37,7 +37,14 @@ async def update_profile(
         current_user.username = profile_update.username
     
     if profile_update.current_level is not None:
-        current_user.current_level = UserLevel(profile_update.current_level)
+        # Ensure current_level is between 1.0 and 10.0
+        level = float(profile_update.current_level)
+        if level < 1.0 or level > 10.0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="current_level must be between 1.0 and 10.0"
+            )
+        current_user.current_level = level
     
     if profile_update.settings is not None:
         current_user.settings = {**current_user.settings, **profile_update.settings}

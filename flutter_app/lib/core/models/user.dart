@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 part 'user.freezed.dart';
 part 'user.g.dart';
@@ -9,9 +10,9 @@ class UserProfile with _$UserProfile {
     required int id,
     required String email,
     required String username,
-    required String currentLevel,
-    required String createdAt,
-    String? lastActive,
+    @JsonKey(name: 'current_level') double? currentLevel, // Nullable double - null means not assessed yet
+    @JsonKey(name: 'created_at') required String createdAt,
+    @JsonKey(name: 'last_active') String? lastActive,
     @Default({}) Map<String, dynamic> settings,
   }) = _UserProfile;
 
@@ -25,7 +26,7 @@ class UserRegister with _$UserRegister {
     required String email,
     required String username,
     required String password,
-    @Default('beginner') String currentLevel,
+    // currentLevel is set during assessment, not during registration
   }) = _UserRegister;
 
   factory UserRegister.fromJson(Map<String, dynamic> json) =>
@@ -46,8 +47,8 @@ class UserLogin with _$UserLogin {
 @freezed
 class TokenResponse with _$TokenResponse {
   const factory TokenResponse({
-    required String accessToken,
-    @Default('bearer') String tokenType,
+    @JsonKey(name: 'access_token') required String accessToken,
+    @JsonKey(name: 'token_type') @Default('bearer') String tokenType,
   }) = _TokenResponse;
 
   factory TokenResponse.fromJson(Map<String, dynamic> json) =>
@@ -58,7 +59,7 @@ class TokenResponse with _$TokenResponse {
 class UserProfileUpdate with _$UserProfileUpdate {
   const factory UserProfileUpdate({
     String? username,
-    String? currentLevel,
+    double? currentLevel, // Double instead of String
     Map<String, dynamic>? settings,
   }) = _UserProfileUpdate;
 
@@ -69,14 +70,14 @@ class UserProfileUpdate with _$UserProfileUpdate {
 @freezed
 class UserStats with _$UserStats {
   const factory UserStats({
-    required int totalWords,
-    required int masteredWords,
-    required int learningWords,
-    required int reviewingWords,
-    required int totalQuizzes,
-    required int correctAnswers,
-    required double accuracyRate,
-    required int wordsDueToday,
+    @JsonKey(name: 'total_words') required int totalWords,
+    @JsonKey(name: 'mastered_words') required int masteredWords,
+    @JsonKey(name: 'learning_words') required int learningWords,
+    @JsonKey(name: 'reviewing_words') required int reviewingWords,
+    @JsonKey(name: 'total_quizzes') required int totalQuizzes,
+    @JsonKey(name: 'correct_answers') required int correctAnswers,
+    @JsonKey(name: 'accuracy_rate') required double accuracyRate,
+    @JsonKey(name: 'words_due_today') required int wordsDueToday,
   }) = _UserStats;
 
   factory UserStats.fromJson(Map<String, dynamic> json) =>

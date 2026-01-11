@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'category.dart';
 
 part 'word.freezed.dart';
@@ -10,9 +11,9 @@ class WordListItem with _$WordListItem {
     required int id,
     required String word,
     String? pronunciation,
-    required int categoryId,
-    required double difficultyLevel,
-    required int importanceScore,
+    @JsonKey(name: 'category_id') int? categoryId,
+    @JsonKey(name: 'difficulty_level') required double difficultyLevel,
+    @JsonKey(name: 'importance_score') required int importanceScore,
   }) = _WordListItem;
 
   factory WordListItem.fromJson(Map<String, dynamic> json) =>
@@ -30,9 +31,11 @@ class WordDetail with _$WordDetail {
     Etymology? etymology,
     @Default([]) List<MediaItem> media,
     Category? category,
-    required double difficultyLevel,
-    required int importanceScore,
+    @Default(5.0) double difficultyLevel,
+    @Default(50) int importanceScore,
     required String source,
+    String? tone,
+    @JsonKey(name: 'cefr_level') String? cefrLevel,
   }) = _WordDetail;
 
   factory WordDetail.fromJson(Map<String, dynamic> json) {
@@ -53,9 +56,11 @@ class WordDetail with _$WordDetail {
       category: json['category'] != null
           ? Category.fromJson(json['category'] as Map<String, dynamic>)
           : null,
-      difficultyLevel: (json['difficulty_level'] as num).toDouble(),
-      importanceScore: json['importance_score'] as int,
+      difficultyLevel: (json['difficulty_level'] as num?)?.toDouble() ?? 5.0,
+      importanceScore: (json['importance_score'] as num?)?.toInt() ?? 50,
       source: json['source'] as String,
+      tone: json['tone'] as String?,
+      cefrLevel: json['cefr_level'] as String?,
     );
   }
 }
@@ -103,15 +108,36 @@ class ReviewPageData with _$ReviewPageData {
   const factory ReviewPageData({
     required String word,
     String? pronunciation,
-    @Default([]) List<String> partsOfSpeech,
+    @JsonKey(name: 'parts_of_speech') @Default([]) List<String> partsOfSpeech,
     @Default([]) List<WordDefinition> definitions,
     Etymology? etymology,
     @Default([]) List<MediaItem> media,
     Category? category,
+    String? tone,
+    @JsonKey(name: 'cefr_level') String? cefrLevel,
   }) = _ReviewPageData;
 
-  factory ReviewPageData.fromJson(Map<String, dynamic> json) =>
-      _$ReviewPageDataFromJson(json);
+  factory ReviewPageData.fromJson(Map<String, dynamic> json) {
+    return ReviewPageData(
+      word: json['word'] as String,
+      pronunciation: json['pronunciation'] as String?,
+      partsOfSpeech: (json['parts_of_speech'] as List<dynamic>?)?.cast<String>() ?? [],
+      definitions: (json['definitions'] as List<dynamic>?)
+          ?.map((e) => WordDefinition.fromJson(e as Map<String, dynamic>))
+          .toList() ?? [],
+      etymology: json['etymology'] != null
+          ? Etymology.fromJson(json['etymology'] as Map<String, dynamic>)
+          : null,
+      media: (json['media'] as List<dynamic>?)
+          ?.map((e) => MediaItem.fromJson(e as Map<String, dynamic>))
+          .toList() ?? [],
+      category: json['category'] != null
+          ? Category.fromJson(json['category'] as Map<String, dynamic>)
+          : null,
+      tone: json['tone'] as String?,
+      cefrLevel: json['cefr_level'] as String?,
+    );
+  }
 }
 
 @freezed

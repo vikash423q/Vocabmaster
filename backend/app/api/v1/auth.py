@@ -40,13 +40,12 @@ async def register(
         )
     
     try: 
-        # Create user
+        # Create user (current_level is null initially, set during assessment)
         user = await create_user(
             db=db,
             email=user_data.email,
             username=user_data.username,
-            password=user_data.password,
-            current_level=user_data.current_level
+            password=user_data.password
         )
     except Exception as e:
         raise HTTPException(

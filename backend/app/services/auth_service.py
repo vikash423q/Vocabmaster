@@ -86,18 +86,16 @@ async def create_user(
     db: AsyncSession,
     email: str,
     username: str,
-    password: str,
-    current_level: str = "beginner"
+    password: str
 ) -> User:
-    """Create a new user."""
-    from app.models.user import UserLevel
+    """Create a new user. current_level is null initially, set during assessment."""
     
     hashed_password = get_password_hash(password)
     user = User(
         email=email,
         username=username,
         password_hash=hashed_password,
-        current_level=UserLevel(current_level)
+        current_level=None  # Will be set during assessment
     )
     db.add(user)
     await db.commit()

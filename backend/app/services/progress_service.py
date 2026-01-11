@@ -162,3 +162,95 @@ async def get_upcoming_reviews(
         }
         for p in progress_entries
     ]
+
+
+async def get_progress_words(
+    db: AsyncSession,
+    user_id: int,
+    status_filter: Optional[str] = "all",
+    category_id: Optional[int] = None,
+    subcategory_id: Optional[int] = None,
+    search: Optional[str] = None,
+    limit: Optional[int] = None,
+    offset: Optional[int] = None
+) -> List[Dict]:
+    """Get progress words filtered by status, category, subcategory, and search."""
+    from app.models.word import Word, Tone
+    from app.models.category import Category
+    from sqlalchemy import or_
+    
+    # Build query with status filter
+    conditions = [UserWordProgress.user_id == user_id]
+    
+    if status_filter and status_filter != "all":
+        try:
+            status_enum = ProgressStatus(status_filter.lower())
+            conditions.append(UserWordProgress.status == status_enum)
+        except ValueError:
+            # Invalid status, return empty list
+            return []
+    
+    query = select(UserWordProgress).where(
+        and_(*conditions)
+    ).options(
+        selectinload(UserWordProgress.word).selectinload(Word.category)
+    )
+    
+    # Apply category/subcategory filter
+    if subcategory_id:
+        # Filter by specific subcategory
+        query = query.join(Word).where(Word.category_id == subcategory_id)
+    elif category_id:
+        # Filter by parent category including all its subcategories
+        # Get all subcategory IDs for this parent category
+        subcategories_query = select(Category.id).where(Category.parent_category_id == category_id)
+        subcategories_result = await db.execute(subcategories_query)
+        subcategory_ids = [row[0] for row in subcategories_result.all()]
+        
+        # Filter by parent category OR any of its subcategories
+        category_conditions = [Word.category_id == category_id]
+        if subcategory_ids:
+            category_conditions.append(Word.category_id.in_(subcategory_ids))
+        
+        query = query.join(Word).where(or_(*category_conditions))
+    else:
+        # Always join Word for search filter or for accessing word fields
+        query = query.join(Word)
+    
+    # Apply search filter
+    if search:
+        query = query.where(Word.word.ilike(f"%{search}%"))
+    
+    query = query.order_by(UserWordProgress.added_at.desc())
+    
+    # Apply pagination
+    if offset:
+        query = query.offset(offset)
+    if limit:
+        query = query.limit(limit)
+    
+    result = await db.execute(query)
+    progress_entries = list(result.scalars().all())
+    
+    return [
+        {
+            "id": p.word_id,
+            "word": p.word.word if p.word else None,
+            "pronunciation": p.word.pronunciation if p.word else None,
+            "category_id": p.word.category_id if p.word else None,
+            "category_name": p.word.category.name if p.word and p.word.category else None,
+            "difficulty_level": float(p.word.difficulty_level) if p.word and p.word.difficulty_level else 5.0,
+            "importance_score": p.word.importance_score if p.word else 50,
+            "status": p.status.value,
+            "fibonacci_level": p.fibonacci_level,
+            "next_review_date": p.next_review_date.isoformat() if p.next_review_date else None,
+            "correct_count": p.correct_count,
+            "incorrect_count": p.incorrect_count,
+            "last_reviewed_at": p.last_reviewed_at.isoformat() if p.last_reviewed_at else None,
+            "added_at": p.added_at.isoformat() if p.added_at else None,
+            "mastered_at": p.mastered_at.isoformat() if p.mastered_at else None,
+            "tone": p.word.tone.value if p.word and p.word.tone else None,
+            "cefr_level": p.word.cefr_level if p.word else None,
+        }
+        for p in progress_entries
+    ]

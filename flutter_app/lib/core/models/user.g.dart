@@ -11,9 +11,9 @@ _$UserProfileImpl _$$UserProfileImplFromJson(Map<String, dynamic> json) =>
       id: (json['id'] as num).toInt(),
       email: json['email'] as String,
       username: json['username'] as String,
-      currentLevel: json['currentLevel'] as String,
-      createdAt: json['createdAt'] as String,
-      lastActive: json['lastActive'] as String?,
+      currentLevel: (json['current_level'] as num?)?.toDouble(),
+      createdAt: json['created_at'] as String,
+      lastActive: json['last_active'] as String?,
       settings: json['settings'] as Map<String, dynamic>? ?? const {},
     );
 
@@ -22,9 +22,9 @@ Map<String, dynamic> _$$UserProfileImplToJson(_$UserProfileImpl instance) =>
       'id': instance.id,
       'email': instance.email,
       'username': instance.username,
-      'currentLevel': instance.currentLevel,
-      'createdAt': instance.createdAt,
-      'lastActive': instance.lastActive,
+      'current_level': instance.currentLevel,
+      'created_at': instance.createdAt,
+      'last_active': instance.lastActive,
       'settings': instance.settings,
     };
 
@@ -33,7 +33,6 @@ _$UserRegisterImpl _$$UserRegisterImplFromJson(Map<String, dynamic> json) =>
       email: json['email'] as String,
       username: json['username'] as String,
       password: json['password'] as String,
-      currentLevel: json['currentLevel'] as String? ?? 'beginner',
     );
 
 Map<String, dynamic> _$$UserRegisterImplToJson(_$UserRegisterImpl instance) =>
@@ -41,7 +40,6 @@ Map<String, dynamic> _$$UserRegisterImplToJson(_$UserRegisterImpl instance) =>
       'email': instance.email,
       'username': instance.username,
       'password': instance.password,
-      'currentLevel': instance.currentLevel,
     };
 
 _$UserLoginImpl _$$UserLoginImplFromJson(Map<String, dynamic> json) =>
@@ -58,21 +56,21 @@ Map<String, dynamic> _$$UserLoginImplToJson(_$UserLoginImpl instance) =>
 
 _$TokenResponseImpl _$$TokenResponseImplFromJson(Map<String, dynamic> json) =>
     _$TokenResponseImpl(
-      accessToken: json['accessToken'] as String,
-      tokenType: json['tokenType'] as String? ?? 'bearer',
+      accessToken: json['access_token'] as String,
+      tokenType: json['token_type'] as String? ?? 'bearer',
     );
 
 Map<String, dynamic> _$$TokenResponseImplToJson(_$TokenResponseImpl instance) =>
     <String, dynamic>{
-      'accessToken': instance.accessToken,
-      'tokenType': instance.tokenType,
+      'access_token': instance.accessToken,
+      'token_type': instance.tokenType,
     };
 
 _$UserProfileUpdateImpl _$$UserProfileUpdateImplFromJson(
         Map<String, dynamic> json) =>
     _$UserProfileUpdateImpl(
       username: json['username'] as String?,
-      currentLevel: json['currentLevel'] as String?,
+      currentLevel: (json['currentLevel'] as num?)?.toDouble(),
       settings: json['settings'] as Map<String, dynamic>?,
     );
 
@@ -86,24 +84,24 @@ Map<String, dynamic> _$$UserProfileUpdateImplToJson(
 
 _$UserStatsImpl _$$UserStatsImplFromJson(Map<String, dynamic> json) =>
     _$UserStatsImpl(
-      totalWords: (json['totalWords'] as num).toInt(),
-      masteredWords: (json['masteredWords'] as num).toInt(),
-      learningWords: (json['learningWords'] as num).toInt(),
-      reviewingWords: (json['reviewingWords'] as num).toInt(),
-      totalQuizzes: (json['totalQuizzes'] as num).toInt(),
-      correctAnswers: (json['correctAnswers'] as num).toInt(),
-      accuracyRate: (json['accuracyRate'] as num).toDouble(),
-      wordsDueToday: (json['wordsDueToday'] as num).toInt(),
+      totalWords: (json['total_words'] as num).toInt(),
+      masteredWords: (json['mastered_words'] as num).toInt(),
+      learningWords: (json['learning_words'] as num).toInt(),
+      reviewingWords: (json['reviewing_words'] as num).toInt(),
+      totalQuizzes: (json['total_quizzes'] as num).toInt(),
+      correctAnswers: (json['correct_answers'] as num).toInt(),
+      accuracyRate: (json['accuracy_rate'] as num).toDouble(),
+      wordsDueToday: (json['words_due_today'] as num).toInt(),
     );
 
 Map<String, dynamic> _$$UserStatsImplToJson(_$UserStatsImpl instance) =>
     <String, dynamic>{
-      'totalWords': instance.totalWords,
-      'masteredWords': instance.masteredWords,
-      'learningWords': instance.learningWords,
-      'reviewingWords': instance.reviewingWords,
-      'totalQuizzes': instance.totalQuizzes,
-      'correctAnswers': instance.correctAnswers,
-      'accuracyRate': instance.accuracyRate,
-      'wordsDueToday': instance.wordsDueToday,
+      'total_words': instance.totalWords,
+      'mastered_words': instance.masteredWords,
+      'learning_words': instance.learningWords,
+      'reviewing_words': instance.reviewingWords,
+      'total_quizzes': instance.totalQuizzes,
+      'correct_answers': instance.correctAnswers,
+      'accuracy_rate': instance.accuracyRate,
+      'words_due_today': instance.wordsDueToday,
     };

@@ -23,8 +23,11 @@ mixin _$WordListItem {
   int get id => throw _privateConstructorUsedError;
   String get word => throw _privateConstructorUsedError;
   String? get pronunciation => throw _privateConstructorUsedError;
-  int get categoryId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'category_id')
+  int? get categoryId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'difficulty_level')
   double get difficultyLevel => throw _privateConstructorUsedError;
+  @JsonKey(name: 'importance_score')
   int get importanceScore => throw _privateConstructorUsedError;
 
   /// Serializes this WordListItem to a JSON map.
@@ -47,9 +50,9 @@ abstract class $WordListItemCopyWith<$Res> {
       {int id,
       String word,
       String? pronunciation,
-      int categoryId,
-      double difficultyLevel,
-      int importanceScore});
+      @JsonKey(name: 'category_id') int? categoryId,
+      @JsonKey(name: 'difficulty_level') double difficultyLevel,
+      @JsonKey(name: 'importance_score') int importanceScore});
 }
 
 /// @nodoc
@@ -70,7 +73,7 @@ class _$WordListItemCopyWithImpl<$Res, $Val extends WordListItem>
     Object? id = null,
     Object? word = null,
     Object? pronunciation = freezed,
-    Object? categoryId = null,
+    Object? categoryId = freezed,
     Object? difficultyLevel = null,
     Object? importanceScore = null,
   }) {
@@ -87,10 +90,10 @@ class _$WordListItemCopyWithImpl<$Res, $Val extends WordListItem>
           ? _value.pronunciation
           : pronunciation // ignore: cast_nullable_to_non_nullable
               as String?,
-      categoryId: null == categoryId
+      categoryId: freezed == categoryId
           ? _value.categoryId
           : categoryId // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
       difficultyLevel: null == difficultyLevel
           ? _value.difficultyLevel
           : difficultyLevel // ignore: cast_nullable_to_non_nullable
@@ -115,9 +118,9 @@ abstract class _$$WordListItemImplCopyWith<$Res>
       {int id,
       String word,
       String? pronunciation,
-      int categoryId,
-      double difficultyLevel,
-      int importanceScore});
+      @JsonKey(name: 'category_id') int? categoryId,
+      @JsonKey(name: 'difficulty_level') double difficultyLevel,
+      @JsonKey(name: 'importance_score') int importanceScore});
 }
 
 /// @nodoc
@@ -136,7 +139,7 @@ class __$$WordListItemImplCopyWithImpl<$Res>
     Object? id = null,
     Object? word = null,
     Object? pronunciation = freezed,
-    Object? categoryId = null,
+    Object? categoryId = freezed,
     Object? difficultyLevel = null,
     Object? importanceScore = null,
   }) {
@@ -153,10 +156,10 @@ class __$$WordListItemImplCopyWithImpl<$Res>
           ? _value.pronunciation
           : pronunciation // ignore: cast_nullable_to_non_nullable
               as String?,
-      categoryId: null == categoryId
+      categoryId: freezed == categoryId
           ? _value.categoryId
           : categoryId // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
       difficultyLevel: null == difficultyLevel
           ? _value.difficultyLevel
           : difficultyLevel // ignore: cast_nullable_to_non_nullable
@@ -176,9 +179,9 @@ class _$WordListItemImpl implements _WordListItem {
       {required this.id,
       required this.word,
       this.pronunciation,
-      required this.categoryId,
-      required this.difficultyLevel,
-      required this.importanceScore});
+      @JsonKey(name: 'category_id') this.categoryId,
+      @JsonKey(name: 'difficulty_level') required this.difficultyLevel,
+      @JsonKey(name: 'importance_score') required this.importanceScore});
 
   factory _$WordListItemImpl.fromJson(Map<String, dynamic> json) =>
       _$$WordListItemImplFromJson(json);
@@ -190,10 +193,13 @@ class _$WordListItemImpl implements _WordListItem {
   @override
   final String? pronunciation;
   @override
-  final int categoryId;
+  @JsonKey(name: 'category_id')
+  final int? categoryId;
   @override
+  @JsonKey(name: 'difficulty_level')
   final double difficultyLevel;
   @override
+  @JsonKey(name: 'importance_score')
   final int importanceScore;
 
   @override
@@ -244,8 +250,9 @@ abstract class _WordListItem implements WordListItem {
       {required final int id,
       required final String word,
       final String? pronunciation,
-      required final int categoryId,
-      required final double difficultyLevel,
+      @JsonKey(name: 'category_id') final int? categoryId,
+      @JsonKey(name: 'difficulty_level') required final double difficultyLevel,
+      @JsonKey(name: 'importance_score')
       required final int importanceScore}) = _$WordListItemImpl;
 
   factory _WordListItem.fromJson(Map<String, dynamic> json) =
@@ -258,10 +265,13 @@ abstract class _WordListItem implements WordListItem {
   @override
   String? get pronunciation;
   @override
-  int get categoryId;
+  @JsonKey(name: 'category_id')
+  int? get categoryId;
   @override
+  @JsonKey(name: 'difficulty_level')
   double get difficultyLevel;
   @override
+  @JsonKey(name: 'importance_score')
   int get importanceScore;
 
   /// Create a copy of WordListItem
@@ -285,6 +295,9 @@ mixin _$WordDetail {
   double get difficultyLevel => throw _privateConstructorUsedError;
   int get importanceScore => throw _privateConstructorUsedError;
   String get source => throw _privateConstructorUsedError;
+  String? get tone => throw _privateConstructorUsedError;
+  @JsonKey(name: 'cefr_level')
+  String? get cefrLevel => throw _privateConstructorUsedError;
 
   /// Create a copy of WordDetail
   /// with the given fields replaced by the non-null parameter values.
@@ -310,7 +323,9 @@ abstract class $WordDetailCopyWith<$Res> {
       Category? category,
       double difficultyLevel,
       int importanceScore,
-      String source});
+      String source,
+      String? tone,
+      @JsonKey(name: 'cefr_level') String? cefrLevel});
 
   $EtymologyCopyWith<$Res>? get etymology;
   $CategoryCopyWith<$Res>? get category;
@@ -342,6 +357,8 @@ class _$WordDetailCopyWithImpl<$Res, $Val extends WordDetail>
     Object? difficultyLevel = null,
     Object? importanceScore = null,
     Object? source = null,
+    Object? tone = freezed,
+    Object? cefrLevel = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -388,6 +405,14 @@ class _$WordDetailCopyWithImpl<$Res, $Val extends WordDetail>
           ? _value.source
           : source // ignore: cast_nullable_to_non_nullable
               as String,
+      tone: freezed == tone
+          ? _value.tone
+          : tone // ignore: cast_nullable_to_non_nullable
+              as String?,
+      cefrLevel: freezed == cefrLevel
+          ? _value.cefrLevel
+          : cefrLevel // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 
@@ -439,7 +464,9 @@ abstract class _$$WordDetailImplCopyWith<$Res>
       Category? category,
       double difficultyLevel,
       int importanceScore,
-      String source});
+      String source,
+      String? tone,
+      @JsonKey(name: 'cefr_level') String? cefrLevel});
 
   @override
   $EtymologyCopyWith<$Res>? get etymology;
@@ -471,6 +498,8 @@ class __$$WordDetailImplCopyWithImpl<$Res>
     Object? difficultyLevel = null,
     Object? importanceScore = null,
     Object? source = null,
+    Object? tone = freezed,
+    Object? cefrLevel = freezed,
   }) {
     return _then(_$WordDetailImpl(
       id: null == id
@@ -517,6 +546,14 @@ class __$$WordDetailImplCopyWithImpl<$Res>
           ? _value.source
           : source // ignore: cast_nullable_to_non_nullable
               as String,
+      tone: freezed == tone
+          ? _value.tone
+          : tone // ignore: cast_nullable_to_non_nullable
+              as String?,
+      cefrLevel: freezed == cefrLevel
+          ? _value.cefrLevel
+          : cefrLevel // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -533,9 +570,11 @@ class _$WordDetailImpl implements _WordDetail {
       this.etymology,
       final List<MediaItem> media = const [],
       this.category,
-      required this.difficultyLevel,
-      required this.importanceScore,
-      required this.source})
+      this.difficultyLevel = 5.0,
+      this.importanceScore = 50,
+      required this.source,
+      this.tone,
+      @JsonKey(name: 'cefr_level') this.cefrLevel})
       : _partsOfSpeech = partsOfSpeech,
         _definitions = definitions,
         _media = media;
@@ -578,15 +617,22 @@ class _$WordDetailImpl implements _WordDetail {
   @override
   final Category? category;
   @override
+  @JsonKey()
   final double difficultyLevel;
   @override
+  @JsonKey()
   final int importanceScore;
   @override
   final String source;
+  @override
+  final String? tone;
+  @override
+  @JsonKey(name: 'cefr_level')
+  final String? cefrLevel;
 
   @override
   String toString() {
-    return 'WordDetail(id: $id, word: $word, pronunciation: $pronunciation, partsOfSpeech: $partsOfSpeech, definitions: $definitions, etymology: $etymology, media: $media, category: $category, difficultyLevel: $difficultyLevel, importanceScore: $importanceScore, source: $source)';
+    return 'WordDetail(id: $id, word: $word, pronunciation: $pronunciation, partsOfSpeech: $partsOfSpeech, definitions: $definitions, etymology: $etymology, media: $media, category: $category, difficultyLevel: $difficultyLevel, importanceScore: $importanceScore, source: $source, tone: $tone, cefrLevel: $cefrLevel)';
   }
 
   @override
@@ -611,7 +657,10 @@ class _$WordDetailImpl implements _WordDetail {
                 other.difficultyLevel == difficultyLevel) &&
             (identical(other.importanceScore, importanceScore) ||
                 other.importanceScore == importanceScore) &&
-            (identical(other.source, source) || other.source == source));
+            (identical(other.source, source) || other.source == source) &&
+            (identical(other.tone, tone) || other.tone == tone) &&
+            (identical(other.cefrLevel, cefrLevel) ||
+                other.cefrLevel == cefrLevel));
   }
 
   @override
@@ -627,7 +676,9 @@ class _$WordDetailImpl implements _WordDetail {
       category,
       difficultyLevel,
       importanceScore,
-      source);
+      source,
+      tone,
+      cefrLevel);
 
   /// Create a copy of WordDetail
   /// with the given fields replaced by the non-null parameter values.
@@ -648,9 +699,11 @@ abstract class _WordDetail implements WordDetail {
       final Etymology? etymology,
       final List<MediaItem> media,
       final Category? category,
-      required final double difficultyLevel,
-      required final int importanceScore,
-      required final String source}) = _$WordDetailImpl;
+      final double difficultyLevel,
+      final int importanceScore,
+      required final String source,
+      final String? tone,
+      @JsonKey(name: 'cefr_level') final String? cefrLevel}) = _$WordDetailImpl;
 
   @override
   int get id;
@@ -674,6 +727,11 @@ abstract class _WordDetail implements WordDetail {
   int get importanceScore;
   @override
   String get source;
+  @override
+  String? get tone;
+  @override
+  @JsonKey(name: 'cefr_level')
+  String? get cefrLevel;
 
   /// Create a copy of WordDetail
   /// with the given fields replaced by the non-null parameter values.
@@ -1303,22 +1361,19 @@ abstract class _MediaItem implements MediaItem {
       throw _privateConstructorUsedError;
 }
 
-ReviewPageData _$ReviewPageDataFromJson(Map<String, dynamic> json) {
-  return _ReviewPageData.fromJson(json);
-}
-
 /// @nodoc
 mixin _$ReviewPageData {
   String get word => throw _privateConstructorUsedError;
   String? get pronunciation => throw _privateConstructorUsedError;
+  @JsonKey(name: 'parts_of_speech')
   List<String> get partsOfSpeech => throw _privateConstructorUsedError;
   List<WordDefinition> get definitions => throw _privateConstructorUsedError;
   Etymology? get etymology => throw _privateConstructorUsedError;
   List<MediaItem> get media => throw _privateConstructorUsedError;
   Category? get category => throw _privateConstructorUsedError;
-
-  /// Serializes this ReviewPageData to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  String? get tone => throw _privateConstructorUsedError;
+  @JsonKey(name: 'cefr_level')
+  String? get cefrLevel => throw _privateConstructorUsedError;
 
   /// Create a copy of ReviewPageData
   /// with the given fields replaced by the non-null parameter values.
@@ -1336,11 +1391,13 @@ abstract class $ReviewPageDataCopyWith<$Res> {
   $Res call(
       {String word,
       String? pronunciation,
-      List<String> partsOfSpeech,
+      @JsonKey(name: 'parts_of_speech') List<String> partsOfSpeech,
       List<WordDefinition> definitions,
       Etymology? etymology,
       List<MediaItem> media,
-      Category? category});
+      Category? category,
+      String? tone,
+      @JsonKey(name: 'cefr_level') String? cefrLevel});
 
   $EtymologyCopyWith<$Res>? get etymology;
   $CategoryCopyWith<$Res>? get category;
@@ -1368,6 +1425,8 @@ class _$ReviewPageDataCopyWithImpl<$Res, $Val extends ReviewPageData>
     Object? etymology = freezed,
     Object? media = null,
     Object? category = freezed,
+    Object? tone = freezed,
+    Object? cefrLevel = freezed,
   }) {
     return _then(_value.copyWith(
       word: null == word
@@ -1398,6 +1457,14 @@ class _$ReviewPageDataCopyWithImpl<$Res, $Val extends ReviewPageData>
           ? _value.category
           : category // ignore: cast_nullable_to_non_nullable
               as Category?,
+      tone: freezed == tone
+          ? _value.tone
+          : tone // ignore: cast_nullable_to_non_nullable
+              as String?,
+      cefrLevel: freezed == cefrLevel
+          ? _value.cefrLevel
+          : cefrLevel // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 
@@ -1441,11 +1508,13 @@ abstract class _$$ReviewPageDataImplCopyWith<$Res>
   $Res call(
       {String word,
       String? pronunciation,
-      List<String> partsOfSpeech,
+      @JsonKey(name: 'parts_of_speech') List<String> partsOfSpeech,
       List<WordDefinition> definitions,
       Etymology? etymology,
       List<MediaItem> media,
-      Category? category});
+      Category? category,
+      String? tone,
+      @JsonKey(name: 'cefr_level') String? cefrLevel});
 
   @override
   $EtymologyCopyWith<$Res>? get etymology;
@@ -1473,6 +1542,8 @@ class __$$ReviewPageDataImplCopyWithImpl<$Res>
     Object? etymology = freezed,
     Object? media = null,
     Object? category = freezed,
+    Object? tone = freezed,
+    Object? cefrLevel = freezed,
   }) {
     return _then(_$ReviewPageDataImpl(
       word: null == word
@@ -1503,27 +1574,35 @@ class __$$ReviewPageDataImplCopyWithImpl<$Res>
           ? _value.category
           : category // ignore: cast_nullable_to_non_nullable
               as Category?,
+      tone: freezed == tone
+          ? _value.tone
+          : tone // ignore: cast_nullable_to_non_nullable
+              as String?,
+      cefrLevel: freezed == cefrLevel
+          ? _value.cefrLevel
+          : cefrLevel // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
 class _$ReviewPageDataImpl implements _ReviewPageData {
   const _$ReviewPageDataImpl(
       {required this.word,
       this.pronunciation,
+      @JsonKey(name: 'parts_of_speech')
       final List<String> partsOfSpeech = const [],
       final List<WordDefinition> definitions = const [],
       this.etymology,
       final List<MediaItem> media = const [],
-      this.category})
+      this.category,
+      this.tone,
+      @JsonKey(name: 'cefr_level') this.cefrLevel})
       : _partsOfSpeech = partsOfSpeech,
         _definitions = definitions,
         _media = media;
-
-  factory _$ReviewPageDataImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ReviewPageDataImplFromJson(json);
 
   @override
   final String word;
@@ -1531,7 +1610,7 @@ class _$ReviewPageDataImpl implements _ReviewPageData {
   final String? pronunciation;
   final List<String> _partsOfSpeech;
   @override
-  @JsonKey()
+  @JsonKey(name: 'parts_of_speech')
   List<String> get partsOfSpeech {
     if (_partsOfSpeech is EqualUnmodifiableListView) return _partsOfSpeech;
     // ignore: implicit_dynamic_type
@@ -1560,10 +1639,15 @@ class _$ReviewPageDataImpl implements _ReviewPageData {
 
   @override
   final Category? category;
+  @override
+  final String? tone;
+  @override
+  @JsonKey(name: 'cefr_level')
+  final String? cefrLevel;
 
   @override
   String toString() {
-    return 'ReviewPageData(word: $word, pronunciation: $pronunciation, partsOfSpeech: $partsOfSpeech, definitions: $definitions, etymology: $etymology, media: $media, category: $category)';
+    return 'ReviewPageData(word: $word, pronunciation: $pronunciation, partsOfSpeech: $partsOfSpeech, definitions: $definitions, etymology: $etymology, media: $media, category: $category, tone: $tone, cefrLevel: $cefrLevel)';
   }
 
   @override
@@ -1582,10 +1666,12 @@ class _$ReviewPageDataImpl implements _ReviewPageData {
                 other.etymology == etymology) &&
             const DeepCollectionEquality().equals(other._media, _media) &&
             (identical(other.category, category) ||
-                other.category == category));
+                other.category == category) &&
+            (identical(other.tone, tone) || other.tone == tone) &&
+            (identical(other.cefrLevel, cefrLevel) ||
+                other.cefrLevel == cefrLevel));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -1595,7 +1681,9 @@ class _$ReviewPageDataImpl implements _ReviewPageData {
       const DeepCollectionEquality().hash(_definitions),
       etymology,
       const DeepCollectionEquality().hash(_media),
-      category);
+      category,
+      tone,
+      cefrLevel);
 
   /// Create a copy of ReviewPageData
   /// with the given fields replaced by the non-null parameter values.
@@ -1605,33 +1693,27 @@ class _$ReviewPageDataImpl implements _ReviewPageData {
   _$$ReviewPageDataImplCopyWith<_$ReviewPageDataImpl> get copyWith =>
       __$$ReviewPageDataImplCopyWithImpl<_$ReviewPageDataImpl>(
           this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$ReviewPageDataImplToJson(
-      this,
-    );
-  }
 }
 
 abstract class _ReviewPageData implements ReviewPageData {
   const factory _ReviewPageData(
-      {required final String word,
-      final String? pronunciation,
-      final List<String> partsOfSpeech,
-      final List<WordDefinition> definitions,
-      final Etymology? etymology,
-      final List<MediaItem> media,
-      final Category? category}) = _$ReviewPageDataImpl;
-
-  factory _ReviewPageData.fromJson(Map<String, dynamic> json) =
-      _$ReviewPageDataImpl.fromJson;
+          {required final String word,
+          final String? pronunciation,
+          @JsonKey(name: 'parts_of_speech') final List<String> partsOfSpeech,
+          final List<WordDefinition> definitions,
+          final Etymology? etymology,
+          final List<MediaItem> media,
+          final Category? category,
+          final String? tone,
+          @JsonKey(name: 'cefr_level') final String? cefrLevel}) =
+      _$ReviewPageDataImpl;
 
   @override
   String get word;
   @override
   String? get pronunciation;
   @override
+  @JsonKey(name: 'parts_of_speech')
   List<String> get partsOfSpeech;
   @override
   List<WordDefinition> get definitions;
@@ -1641,6 +1723,11 @@ abstract class _ReviewPageData implements ReviewPageData {
   List<MediaItem> get media;
   @override
   Category? get category;
+  @override
+  String? get tone;
+  @override
+  @JsonKey(name: 'cefr_level')
+  String? get cefrLevel;
 
   /// Create a copy of ReviewPageData
   /// with the given fields replaced by the non-null parameter values.

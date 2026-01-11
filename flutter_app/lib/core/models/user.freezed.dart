@@ -23,8 +23,12 @@ mixin _$UserProfile {
   int get id => throw _privateConstructorUsedError;
   String get email => throw _privateConstructorUsedError;
   String get username => throw _privateConstructorUsedError;
-  String get currentLevel => throw _privateConstructorUsedError;
+  @JsonKey(name: 'current_level')
+  double? get currentLevel =>
+      throw _privateConstructorUsedError; // Nullable double - null means not assessed yet
+  @JsonKey(name: 'created_at')
   String get createdAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'last_active')
   String? get lastActive => throw _privateConstructorUsedError;
   Map<String, dynamic> get settings => throw _privateConstructorUsedError;
 
@@ -48,9 +52,9 @@ abstract class $UserProfileCopyWith<$Res> {
       {int id,
       String email,
       String username,
-      String currentLevel,
-      String createdAt,
-      String? lastActive,
+      @JsonKey(name: 'current_level') double? currentLevel,
+      @JsonKey(name: 'created_at') String createdAt,
+      @JsonKey(name: 'last_active') String? lastActive,
       Map<String, dynamic> settings});
 }
 
@@ -72,7 +76,7 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
     Object? id = null,
     Object? email = null,
     Object? username = null,
-    Object? currentLevel = null,
+    Object? currentLevel = freezed,
     Object? createdAt = null,
     Object? lastActive = freezed,
     Object? settings = null,
@@ -90,10 +94,10 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
           ? _value.username
           : username // ignore: cast_nullable_to_non_nullable
               as String,
-      currentLevel: null == currentLevel
+      currentLevel: freezed == currentLevel
           ? _value.currentLevel
           : currentLevel // ignore: cast_nullable_to_non_nullable
-              as String,
+              as double?,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -122,9 +126,9 @@ abstract class _$$UserProfileImplCopyWith<$Res>
       {int id,
       String email,
       String username,
-      String currentLevel,
-      String createdAt,
-      String? lastActive,
+      @JsonKey(name: 'current_level') double? currentLevel,
+      @JsonKey(name: 'created_at') String createdAt,
+      @JsonKey(name: 'last_active') String? lastActive,
       Map<String, dynamic> settings});
 }
 
@@ -144,7 +148,7 @@ class __$$UserProfileImplCopyWithImpl<$Res>
     Object? id = null,
     Object? email = null,
     Object? username = null,
-    Object? currentLevel = null,
+    Object? currentLevel = freezed,
     Object? createdAt = null,
     Object? lastActive = freezed,
     Object? settings = null,
@@ -162,10 +166,10 @@ class __$$UserProfileImplCopyWithImpl<$Res>
           ? _value.username
           : username // ignore: cast_nullable_to_non_nullable
               as String,
-      currentLevel: null == currentLevel
+      currentLevel: freezed == currentLevel
           ? _value.currentLevel
           : currentLevel // ignore: cast_nullable_to_non_nullable
-              as String,
+              as double?,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -189,9 +193,9 @@ class _$UserProfileImpl implements _UserProfile {
       {required this.id,
       required this.email,
       required this.username,
-      required this.currentLevel,
-      required this.createdAt,
-      this.lastActive,
+      @JsonKey(name: 'current_level') this.currentLevel,
+      @JsonKey(name: 'created_at') required this.createdAt,
+      @JsonKey(name: 'last_active') this.lastActive,
       final Map<String, dynamic> settings = const {}})
       : _settings = settings;
 
@@ -205,10 +209,14 @@ class _$UserProfileImpl implements _UserProfile {
   @override
   final String username;
   @override
-  final String currentLevel;
+  @JsonKey(name: 'current_level')
+  final double? currentLevel;
+// Nullable double - null means not assessed yet
   @override
+  @JsonKey(name: 'created_at')
   final String createdAt;
   @override
+  @JsonKey(name: 'last_active')
   final String? lastActive;
   final Map<String, dynamic> _settings;
   @override
@@ -275,9 +283,9 @@ abstract class _UserProfile implements UserProfile {
       {required final int id,
       required final String email,
       required final String username,
-      required final String currentLevel,
-      required final String createdAt,
-      final String? lastActive,
+      @JsonKey(name: 'current_level') final double? currentLevel,
+      @JsonKey(name: 'created_at') required final String createdAt,
+      @JsonKey(name: 'last_active') final String? lastActive,
       final Map<String, dynamic> settings}) = _$UserProfileImpl;
 
   factory _UserProfile.fromJson(Map<String, dynamic> json) =
@@ -290,10 +298,13 @@ abstract class _UserProfile implements UserProfile {
   @override
   String get username;
   @override
-  String get currentLevel;
+  @JsonKey(name: 'current_level')
+  double? get currentLevel; // Nullable double - null means not assessed yet
   @override
+  @JsonKey(name: 'created_at')
   String get createdAt;
   @override
+  @JsonKey(name: 'last_active')
   String? get lastActive;
   @override
   Map<String, dynamic> get settings;
@@ -315,7 +326,6 @@ mixin _$UserRegister {
   String get email => throw _privateConstructorUsedError;
   String get username => throw _privateConstructorUsedError;
   String get password => throw _privateConstructorUsedError;
-  String get currentLevel => throw _privateConstructorUsedError;
 
   /// Serializes this UserRegister to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -333,8 +343,7 @@ abstract class $UserRegisterCopyWith<$Res> {
           UserRegister value, $Res Function(UserRegister) then) =
       _$UserRegisterCopyWithImpl<$Res, UserRegister>;
   @useResult
-  $Res call(
-      {String email, String username, String password, String currentLevel});
+  $Res call({String email, String username, String password});
 }
 
 /// @nodoc
@@ -355,7 +364,6 @@ class _$UserRegisterCopyWithImpl<$Res, $Val extends UserRegister>
     Object? email = null,
     Object? username = null,
     Object? password = null,
-    Object? currentLevel = null,
   }) {
     return _then(_value.copyWith(
       email: null == email
@@ -370,10 +378,6 @@ class _$UserRegisterCopyWithImpl<$Res, $Val extends UserRegister>
           ? _value.password
           : password // ignore: cast_nullable_to_non_nullable
               as String,
-      currentLevel: null == currentLevel
-          ? _value.currentLevel
-          : currentLevel // ignore: cast_nullable_to_non_nullable
-              as String,
     ) as $Val);
   }
 }
@@ -386,8 +390,7 @@ abstract class _$$UserRegisterImplCopyWith<$Res>
       __$$UserRegisterImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String email, String username, String password, String currentLevel});
+  $Res call({String email, String username, String password});
 }
 
 /// @nodoc
@@ -406,7 +409,6 @@ class __$$UserRegisterImplCopyWithImpl<$Res>
     Object? email = null,
     Object? username = null,
     Object? password = null,
-    Object? currentLevel = null,
   }) {
     return _then(_$UserRegisterImpl(
       email: null == email
@@ -421,10 +423,6 @@ class __$$UserRegisterImplCopyWithImpl<$Res>
           ? _value.password
           : password // ignore: cast_nullable_to_non_nullable
               as String,
-      currentLevel: null == currentLevel
-          ? _value.currentLevel
-          : currentLevel // ignore: cast_nullable_to_non_nullable
-              as String,
     ));
   }
 }
@@ -433,10 +431,7 @@ class __$$UserRegisterImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$UserRegisterImpl implements _UserRegister {
   const _$UserRegisterImpl(
-      {required this.email,
-      required this.username,
-      required this.password,
-      this.currentLevel = 'beginner'});
+      {required this.email, required this.username, required this.password});
 
   factory _$UserRegisterImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserRegisterImplFromJson(json);
@@ -447,13 +442,10 @@ class _$UserRegisterImpl implements _UserRegister {
   final String username;
   @override
   final String password;
-  @override
-  @JsonKey()
-  final String currentLevel;
 
   @override
   String toString() {
-    return 'UserRegister(email: $email, username: $username, password: $password, currentLevel: $currentLevel)';
+    return 'UserRegister(email: $email, username: $username, password: $password)';
   }
 
   @override
@@ -465,15 +457,12 @@ class _$UserRegisterImpl implements _UserRegister {
             (identical(other.username, username) ||
                 other.username == username) &&
             (identical(other.password, password) ||
-                other.password == password) &&
-            (identical(other.currentLevel, currentLevel) ||
-                other.currentLevel == currentLevel));
+                other.password == password));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, email, username, password, currentLevel);
+  int get hashCode => Object.hash(runtimeType, email, username, password);
 
   /// Create a copy of UserRegister
   /// with the given fields replaced by the non-null parameter values.
@@ -495,8 +484,7 @@ abstract class _UserRegister implements UserRegister {
   const factory _UserRegister(
       {required final String email,
       required final String username,
-      required final String password,
-      final String currentLevel}) = _$UserRegisterImpl;
+      required final String password}) = _$UserRegisterImpl;
 
   factory _UserRegister.fromJson(Map<String, dynamic> json) =
       _$UserRegisterImpl.fromJson;
@@ -507,8 +495,6 @@ abstract class _UserRegister implements UserRegister {
   String get username;
   @override
   String get password;
-  @override
-  String get currentLevel;
 
   /// Create a copy of UserRegister
   /// with the given fields replaced by the non-null parameter values.
@@ -691,7 +677,9 @@ TokenResponse _$TokenResponseFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$TokenResponse {
+  @JsonKey(name: 'access_token')
   String get accessToken => throw _privateConstructorUsedError;
+  @JsonKey(name: 'token_type')
   String get tokenType => throw _privateConstructorUsedError;
 
   /// Serializes this TokenResponse to a JSON map.
@@ -710,7 +698,9 @@ abstract class $TokenResponseCopyWith<$Res> {
           TokenResponse value, $Res Function(TokenResponse) then) =
       _$TokenResponseCopyWithImpl<$Res, TokenResponse>;
   @useResult
-  $Res call({String accessToken, String tokenType});
+  $Res call(
+      {@JsonKey(name: 'access_token') String accessToken,
+      @JsonKey(name: 'token_type') String tokenType});
 }
 
 /// @nodoc
@@ -752,7 +742,9 @@ abstract class _$$TokenResponseImplCopyWith<$Res>
       __$$TokenResponseImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String accessToken, String tokenType});
+  $Res call(
+      {@JsonKey(name: 'access_token') String accessToken,
+      @JsonKey(name: 'token_type') String tokenType});
 }
 
 /// @nodoc
@@ -788,15 +780,17 @@ class __$$TokenResponseImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$TokenResponseImpl implements _TokenResponse {
   const _$TokenResponseImpl(
-      {required this.accessToken, this.tokenType = 'bearer'});
+      {@JsonKey(name: 'access_token') required this.accessToken,
+      @JsonKey(name: 'token_type') this.tokenType = 'bearer'});
 
   factory _$TokenResponseImpl.fromJson(Map<String, dynamic> json) =>
       _$$TokenResponseImplFromJson(json);
 
   @override
+  @JsonKey(name: 'access_token')
   final String accessToken;
   @override
-  @JsonKey()
+  @JsonKey(name: 'token_type')
   final String tokenType;
 
   @override
@@ -837,15 +831,18 @@ class _$TokenResponseImpl implements _TokenResponse {
 
 abstract class _TokenResponse implements TokenResponse {
   const factory _TokenResponse(
-      {required final String accessToken,
-      final String tokenType}) = _$TokenResponseImpl;
+          {@JsonKey(name: 'access_token') required final String accessToken,
+          @JsonKey(name: 'token_type') final String tokenType}) =
+      _$TokenResponseImpl;
 
   factory _TokenResponse.fromJson(Map<String, dynamic> json) =
       _$TokenResponseImpl.fromJson;
 
   @override
+  @JsonKey(name: 'access_token')
   String get accessToken;
   @override
+  @JsonKey(name: 'token_type')
   String get tokenType;
 
   /// Create a copy of TokenResponse
@@ -863,7 +860,8 @@ UserProfileUpdate _$UserProfileUpdateFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$UserProfileUpdate {
   String? get username => throw _privateConstructorUsedError;
-  String? get currentLevel => throw _privateConstructorUsedError;
+  double? get currentLevel =>
+      throw _privateConstructorUsedError; // Double instead of String
   Map<String, dynamic>? get settings => throw _privateConstructorUsedError;
 
   /// Serializes this UserProfileUpdate to a JSON map.
@@ -883,7 +881,7 @@ abstract class $UserProfileUpdateCopyWith<$Res> {
       _$UserProfileUpdateCopyWithImpl<$Res, UserProfileUpdate>;
   @useResult
   $Res call(
-      {String? username, String? currentLevel, Map<String, dynamic>? settings});
+      {String? username, double? currentLevel, Map<String, dynamic>? settings});
 }
 
 /// @nodoc
@@ -913,7 +911,7 @@ class _$UserProfileUpdateCopyWithImpl<$Res, $Val extends UserProfileUpdate>
       currentLevel: freezed == currentLevel
           ? _value.currentLevel
           : currentLevel // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as double?,
       settings: freezed == settings
           ? _value.settings
           : settings // ignore: cast_nullable_to_non_nullable
@@ -931,7 +929,7 @@ abstract class _$$UserProfileUpdateImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String? username, String? currentLevel, Map<String, dynamic>? settings});
+      {String? username, double? currentLevel, Map<String, dynamic>? settings});
 }
 
 /// @nodoc
@@ -959,7 +957,7 @@ class __$$UserProfileUpdateImplCopyWithImpl<$Res>
       currentLevel: freezed == currentLevel
           ? _value.currentLevel
           : currentLevel // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as double?,
       settings: freezed == settings
           ? _value._settings
           : settings // ignore: cast_nullable_to_non_nullable
@@ -981,8 +979,10 @@ class _$UserProfileUpdateImpl implements _UserProfileUpdate {
   @override
   final String? username;
   @override
-  final String? currentLevel;
+  final double? currentLevel;
+// Double instead of String
   final Map<String, dynamic>? _settings;
+// Double instead of String
   @override
   Map<String, dynamic>? get settings {
     final value = _settings;
@@ -1034,7 +1034,7 @@ class _$UserProfileUpdateImpl implements _UserProfileUpdate {
 abstract class _UserProfileUpdate implements UserProfileUpdate {
   const factory _UserProfileUpdate(
       {final String? username,
-      final String? currentLevel,
+      final double? currentLevel,
       final Map<String, dynamic>? settings}) = _$UserProfileUpdateImpl;
 
   factory _UserProfileUpdate.fromJson(Map<String, dynamic> json) =
@@ -1043,7 +1043,7 @@ abstract class _UserProfileUpdate implements UserProfileUpdate {
   @override
   String? get username;
   @override
-  String? get currentLevel;
+  double? get currentLevel; // Double instead of String
   @override
   Map<String, dynamic>? get settings;
 
@@ -1061,13 +1061,21 @@ UserStats _$UserStatsFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$UserStats {
+  @JsonKey(name: 'total_words')
   int get totalWords => throw _privateConstructorUsedError;
+  @JsonKey(name: 'mastered_words')
   int get masteredWords => throw _privateConstructorUsedError;
+  @JsonKey(name: 'learning_words')
   int get learningWords => throw _privateConstructorUsedError;
+  @JsonKey(name: 'reviewing_words')
   int get reviewingWords => throw _privateConstructorUsedError;
+  @JsonKey(name: 'total_quizzes')
   int get totalQuizzes => throw _privateConstructorUsedError;
+  @JsonKey(name: 'correct_answers')
   int get correctAnswers => throw _privateConstructorUsedError;
+  @JsonKey(name: 'accuracy_rate')
   double get accuracyRate => throw _privateConstructorUsedError;
+  @JsonKey(name: 'words_due_today')
   int get wordsDueToday => throw _privateConstructorUsedError;
 
   /// Serializes this UserStats to a JSON map.
@@ -1086,14 +1094,14 @@ abstract class $UserStatsCopyWith<$Res> {
       _$UserStatsCopyWithImpl<$Res, UserStats>;
   @useResult
   $Res call(
-      {int totalWords,
-      int masteredWords,
-      int learningWords,
-      int reviewingWords,
-      int totalQuizzes,
-      int correctAnswers,
-      double accuracyRate,
-      int wordsDueToday});
+      {@JsonKey(name: 'total_words') int totalWords,
+      @JsonKey(name: 'mastered_words') int masteredWords,
+      @JsonKey(name: 'learning_words') int learningWords,
+      @JsonKey(name: 'reviewing_words') int reviewingWords,
+      @JsonKey(name: 'total_quizzes') int totalQuizzes,
+      @JsonKey(name: 'correct_answers') int correctAnswers,
+      @JsonKey(name: 'accuracy_rate') double accuracyRate,
+      @JsonKey(name: 'words_due_today') int wordsDueToday});
 }
 
 /// @nodoc
@@ -1166,14 +1174,14 @@ abstract class _$$UserStatsImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {int totalWords,
-      int masteredWords,
-      int learningWords,
-      int reviewingWords,
-      int totalQuizzes,
-      int correctAnswers,
-      double accuracyRate,
-      int wordsDueToday});
+      {@JsonKey(name: 'total_words') int totalWords,
+      @JsonKey(name: 'mastered_words') int masteredWords,
+      @JsonKey(name: 'learning_words') int learningWords,
+      @JsonKey(name: 'reviewing_words') int reviewingWords,
+      @JsonKey(name: 'total_quizzes') int totalQuizzes,
+      @JsonKey(name: 'correct_answers') int correctAnswers,
+      @JsonKey(name: 'accuracy_rate') double accuracyRate,
+      @JsonKey(name: 'words_due_today') int wordsDueToday});
 }
 
 /// @nodoc
@@ -1239,33 +1247,41 @@ class __$$UserStatsImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$UserStatsImpl implements _UserStats {
   const _$UserStatsImpl(
-      {required this.totalWords,
-      required this.masteredWords,
-      required this.learningWords,
-      required this.reviewingWords,
-      required this.totalQuizzes,
-      required this.correctAnswers,
-      required this.accuracyRate,
-      required this.wordsDueToday});
+      {@JsonKey(name: 'total_words') required this.totalWords,
+      @JsonKey(name: 'mastered_words') required this.masteredWords,
+      @JsonKey(name: 'learning_words') required this.learningWords,
+      @JsonKey(name: 'reviewing_words') required this.reviewingWords,
+      @JsonKey(name: 'total_quizzes') required this.totalQuizzes,
+      @JsonKey(name: 'correct_answers') required this.correctAnswers,
+      @JsonKey(name: 'accuracy_rate') required this.accuracyRate,
+      @JsonKey(name: 'words_due_today') required this.wordsDueToday});
 
   factory _$UserStatsImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserStatsImplFromJson(json);
 
   @override
+  @JsonKey(name: 'total_words')
   final int totalWords;
   @override
+  @JsonKey(name: 'mastered_words')
   final int masteredWords;
   @override
+  @JsonKey(name: 'learning_words')
   final int learningWords;
   @override
+  @JsonKey(name: 'reviewing_words')
   final int reviewingWords;
   @override
+  @JsonKey(name: 'total_quizzes')
   final int totalQuizzes;
   @override
+  @JsonKey(name: 'correct_answers')
   final int correctAnswers;
   @override
+  @JsonKey(name: 'accuracy_rate')
   final double accuracyRate;
   @override
+  @JsonKey(name: 'words_due_today')
   final int wordsDueToday;
 
   @override
@@ -1327,33 +1343,42 @@ class _$UserStatsImpl implements _UserStats {
 
 abstract class _UserStats implements UserStats {
   const factory _UserStats(
-      {required final int totalWords,
-      required final int masteredWords,
-      required final int learningWords,
-      required final int reviewingWords,
-      required final int totalQuizzes,
-      required final int correctAnswers,
-      required final double accuracyRate,
-      required final int wordsDueToday}) = _$UserStatsImpl;
+          {@JsonKey(name: 'total_words') required final int totalWords,
+          @JsonKey(name: 'mastered_words') required final int masteredWords,
+          @JsonKey(name: 'learning_words') required final int learningWords,
+          @JsonKey(name: 'reviewing_words') required final int reviewingWords,
+          @JsonKey(name: 'total_quizzes') required final int totalQuizzes,
+          @JsonKey(name: 'correct_answers') required final int correctAnswers,
+          @JsonKey(name: 'accuracy_rate') required final double accuracyRate,
+          @JsonKey(name: 'words_due_today') required final int wordsDueToday}) =
+      _$UserStatsImpl;
 
   factory _UserStats.fromJson(Map<String, dynamic> json) =
       _$UserStatsImpl.fromJson;
 
   @override
+  @JsonKey(name: 'total_words')
   int get totalWords;
   @override
+  @JsonKey(name: 'mastered_words')
   int get masteredWords;
   @override
+  @JsonKey(name: 'learning_words')
   int get learningWords;
   @override
+  @JsonKey(name: 'reviewing_words')
   int get reviewingWords;
   @override
+  @JsonKey(name: 'total_quizzes')
   int get totalQuizzes;
   @override
+  @JsonKey(name: 'correct_answers')
   int get correctAnswers;
   @override
+  @JsonKey(name: 'accuracy_rate')
   double get accuracyRate;
   @override
+  @JsonKey(name: 'words_due_today')
   int get wordsDueToday;
 
   /// Create a copy of UserStats

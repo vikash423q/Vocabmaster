@@ -55,3 +55,24 @@ class UpcomingReview(BaseModel):
     word: Optional[str] = None
     review_date: Optional[str] = None
     level: int
+
+
+class MCQQuestion(BaseModel):
+    """MCQ question data for daily review."""
+    word_id: int
+    word: str
+    definition: str  # Primary definition text
+    options: List[str]  # 4 options including correct answer
+    correct_answer: str
+    level: int  # Fibonacci level
+
+
+class DailyStackQuestion(BaseModel):
+    """Complete daily stack item with MCQ question and word details."""
+    id: int  # Daily stack entry ID
+    word_id: int
+    scheduled_date: str
+    is_reviewed: bool
+    level: int
+    question: MCQQuestion
+    word_detail: Dict[str, Any]  # Full word detail (same as WordDetail schema)

@@ -12,17 +12,39 @@ from app.models.word_media import WordMedia
 async def get_words(
     db: AsyncSession,
     category_id: Optional[int] = None,
+    subcategory_id: Optional[int] = None,
     difficulty_min: Optional[float] = None,
     difficulty_max: Optional[float] = None,
     search: Optional[str] = None,
     limit: int = 100,
     offset: int = 0
 ) -> List[Word]:
-    """Get words with optional filters."""
+    """Get words with optional filters.
+    
+    If subcategory_id is provided, filter by that specific category.
+    If category_id is provided (and no subcategory_id), filter by parent category including all its subcategories.
+    """
+    from app.models.category import Category
+    from sqlalchemy import and_, or_
+    
     query = select(Word)
     
-    if category_id:
-        query = query.where(Word.category_id == category_id)
+    if subcategory_id:
+        # Filter by specific subcategory
+        query = query.where(Word.category_id == subcategory_id)
+    elif category_id:
+        # Filter by parent category including all its subcategories
+        # Get all subcategory IDs for this parent category
+        subcategories_query = select(Category.id).where(Category.parent_category_id == category_id)
+        subcategories_result = await db.execute(subcategories_query)
+        subcategory_ids = [row[0] for row in subcategories_result.all()]
+        
+        # Filter by parent category OR any of its subcategories
+        category_conditions = [Word.category_id == category_id]
+        if subcategory_ids:
+            category_conditions.append(Word.category_id.in_(subcategory_ids))
+        
+        query = query.where(or_(*category_conditions))
     
     if difficulty_min is not None:
         query = query.where(Word.difficulty_level >= difficulty_min)
@@ -48,6 +70,28 @@ async def get_word_by_id(db: AsyncSession, word_id: int) -> Optional[Word]:
     )
     result = await db.execute(query)
     return result.scalar_one_or_none()
+
+
+async def get_words_by_ids(
+    db: AsyncSession,
+    word_ids: List[int]
+) -> List[Word]:
+    """Get multiple words by their IDs with all related data."""
+    if not word_ids:
+        return []
+    
+    query = select(Word).where(Word.id.in_(word_ids)).options(
+        selectinload(Word.definitions),
+        selectinload(Word.etymology),
+        selectinload(Word.media),
+        selectinload(Word.category)
+    )
+    result = await db.execute(query)
+    words = list(result.scalars().all())
+    
+    # Preserve the order of word_ids
+    word_dict = {word.id: word for word in words}
+    return [word_dict[word_id] for word_id in word_ids if word_id in word_dict]
 
 
 async def get_word_for_review_page(db: AsyncSession, word_id: int) -> Optional[dict]:

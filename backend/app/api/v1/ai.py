@@ -154,7 +154,7 @@ async def generate_story(
     
     payload = {
         "words": word_list,
-        "user_level": current_user.current_level.value
+        "user_level": str(float(current_user.current_level)) if current_user.current_level else "5.0"  # Default to 5.0 if not assessed, must be string
     }
     
     result = await call_ai_service("/generate-story", payload)

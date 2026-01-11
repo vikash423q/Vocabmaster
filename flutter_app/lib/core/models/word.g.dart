@@ -11,9 +11,9 @@ _$WordListItemImpl _$$WordListItemImplFromJson(Map<String, dynamic> json) =>
       id: (json['id'] as num).toInt(),
       word: json['word'] as String,
       pronunciation: json['pronunciation'] as String?,
-      categoryId: (json['categoryId'] as num).toInt(),
-      difficultyLevel: (json['difficultyLevel'] as num).toDouble(),
-      importanceScore: (json['importanceScore'] as num).toInt(),
+      categoryId: (json['category_id'] as num?)?.toInt(),
+      difficultyLevel: (json['difficulty_level'] as num).toDouble(),
+      importanceScore: (json['importance_score'] as num).toInt(),
     );
 
 Map<String, dynamic> _$$WordListItemImplToJson(_$WordListItemImpl instance) =>
@@ -21,9 +21,9 @@ Map<String, dynamic> _$$WordListItemImplToJson(_$WordListItemImpl instance) =>
       'id': instance.id,
       'word': instance.word,
       'pronunciation': instance.pronunciation,
-      'categoryId': instance.categoryId,
-      'difficultyLevel': instance.difficultyLevel,
-      'importanceScore': instance.importanceScore,
+      'category_id': instance.categoryId,
+      'difficulty_level': instance.difficultyLevel,
+      'importance_score': instance.importanceScore,
     };
 
 _$WordDefinitionImpl _$$WordDefinitionImplFromJson(Map<String, dynamic> json) =>
@@ -74,42 +74,6 @@ Map<String, dynamic> _$$MediaItemImplToJson(_$MediaItemImpl instance) =>
       'source': instance.source,
       'caption': instance.caption,
       'isAiGenerated': instance.isAiGenerated,
-    };
-
-_$ReviewPageDataImpl _$$ReviewPageDataImplFromJson(Map<String, dynamic> json) =>
-    _$ReviewPageDataImpl(
-      word: json['word'] as String,
-      pronunciation: json['pronunciation'] as String?,
-      partsOfSpeech: (json['partsOfSpeech'] as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toList() ??
-          const [],
-      definitions: (json['definitions'] as List<dynamic>?)
-              ?.map((e) => WordDefinition.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      etymology: json['etymology'] == null
-          ? null
-          : Etymology.fromJson(json['etymology'] as Map<String, dynamic>),
-      media: (json['media'] as List<dynamic>?)
-              ?.map((e) => MediaItem.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      category: json['category'] == null
-          ? null
-          : Category.fromJson(json['category'] as Map<String, dynamic>),
-    );
-
-Map<String, dynamic> _$$ReviewPageDataImplToJson(
-        _$ReviewPageDataImpl instance) =>
-    <String, dynamic>{
-      'word': instance.word,
-      'pronunciation': instance.pronunciation,
-      'partsOfSpeech': instance.partsOfSpeech,
-      'definitions': instance.definitions,
-      'etymology': instance.etymology,
-      'media': instance.media,
-      'category': instance.category,
     };
 
 _$WordCreateImpl _$$WordCreateImplFromJson(Map<String, dynamic> json) =>

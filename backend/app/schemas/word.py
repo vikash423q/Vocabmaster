@@ -24,6 +24,11 @@ class WordCreateSimple(BaseModel):
     word: str
 
 
+class WordsByIdsRequest(BaseModel):
+    """Request schema for fetching words by IDs."""
+    word_ids: List[int]
+
+
 class WordDefinitionSchema(BaseModel):
     text: str
     is_primary: bool

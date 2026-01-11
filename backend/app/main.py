@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.api.v1 import auth, words, review, ai, media, user
+from app.api.v1 import auth, words, review, ai, media, user, assessment
 from app.database import engine, Base
 
 app = FastAPI(
@@ -26,6 +26,7 @@ app.include_router(words.router, prefix="/api/words", tags=["Words"])
 app.include_router(review.router, prefix="/api", tags=["Review"])
 app.include_router(ai.router, prefix="/api/ai", tags=["AI"])
 app.include_router(media.router, prefix="/api/media", tags=["Media"])
+app.include_router(assessment.router, prefix="/api/assessment", tags=["Assessment"])
 
 
 @app.on_event("startup")

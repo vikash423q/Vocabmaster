@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 part 'quiz.freezed.dart';
 part 'quiz.g.dart';
@@ -6,7 +7,7 @@ part 'quiz.g.dart';
 @freezed
 class QuizGenerateRequest with _$QuizGenerateRequest {
   const factory QuizGenerateRequest({
-    required int wordId,
+    @JsonKey(name: 'word_id') required int wordId,
   }) = _QuizGenerateRequest;
 
   factory QuizGenerateRequest.fromJson(Map<String, dynamic> json) =>
@@ -17,7 +18,7 @@ class QuizGenerateRequest with _$QuizGenerateRequest {
 class QuizOption with _$QuizOption {
   const factory QuizOption({
     required String text,
-    @Default(false) bool isCorrect,
+    @JsonKey(name: 'is_correct') @Default(false) bool isCorrect,
   }) = _QuizOption;
 
   factory QuizOption.fromJson(Map<String, dynamic> json) =>
@@ -29,7 +30,7 @@ class QuizResponse with _$QuizResponse {
   const factory QuizResponse({
     required String question,
     required List<QuizOption> options,
-    required String correctAnswer,
+    @JsonKey(name: 'correct_answer') required String correctAnswer,
     String? explanation,
   }) = _QuizResponse;
 
@@ -40,7 +41,7 @@ class QuizResponse with _$QuizResponse {
 @freezed
 class ExplainRequest with _$ExplainRequest {
   const factory ExplainRequest({
-    required int wordId,
+    @JsonKey(name: 'word_id') required int wordId,
     required String question,
   }) = _ExplainRequest;
 
@@ -61,9 +62,9 @@ class ExplainResponse with _$ExplainResponse {
 @freezed
 class StoryGenerateRequest with _$StoryGenerateRequest {
   const factory StoryGenerateRequest({
-    List<int>? wordIds,
-    @Default(20) int batchSize,
-    @Default('daily') String storyType,
+    @JsonKey(name: 'word_ids') required List<int> wordIds,
+    @JsonKey(name: 'batch_size') @Default(20) int batchSize,
+    @JsonKey(name: 'story_type') @Default('daily') String storyType,
   }) = _StoryGenerateRequest;
 
   factory StoryGenerateRequest.fromJson(Map<String, dynamic> json) =>
@@ -73,10 +74,10 @@ class StoryGenerateRequest with _$StoryGenerateRequest {
 @freezed
 class StoryResponse with _$StoryResponse {
   const factory StoryResponse({
-    required int storyId,
+    @JsonKey(name: 'story_id') required int storyId,
     required String narrative,
-    required List<int> wordIds,
-    required String storyType,
+    @JsonKey(name: 'word_ids') required List<int> wordIds,
+    @JsonKey(name: 'story_type') required String storyType,
   }) = _StoryResponse;
 
   factory StoryResponse.fromJson(Map<String, dynamic> json) =>
@@ -86,7 +87,7 @@ class StoryResponse with _$StoryResponse {
 @freezed
 class ChatRequest with _$ChatRequest {
   const factory ChatRequest({
-    required int wordId,
+    @JsonKey(name: 'word_id') required int wordId,
     required String message,
   }) = _ChatRequest;
 

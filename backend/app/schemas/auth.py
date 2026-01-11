@@ -7,7 +7,7 @@ class UserRegister(BaseModel):
     email: EmailStr
     username: str
     password: str
-    current_level: Optional[str] = "beginner"
+    # current_level is now optional float, set during assessment
 
 
 class UserLogin(BaseModel):
@@ -26,7 +26,7 @@ class UserProfile(BaseModel):
     id: int
     email: str
     username: str
-    current_level: str
+    current_level: Optional[float] = None  # Float: 1.0-10.0, null = not assessed yet
     created_at: datetime
     last_active: Optional[datetime] = None
     settings: dict = {}
@@ -44,7 +44,7 @@ class UserProfile(BaseModel):
 
 class UserProfileUpdate(BaseModel):
     username: Optional[str] = None
-    current_level: Optional[str] = None
+    current_level: Optional[float] = None  # Float: 1.0-10.0
     settings: Optional[dict] = None
 
 
