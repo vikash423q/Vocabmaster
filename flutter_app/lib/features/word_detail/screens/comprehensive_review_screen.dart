@@ -1,19 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../bloc/word_detail_bloc.dart';
 import '../../../core/models/word.dart';
+import '../../../core/models/progress.dart';
+import '../../../core/di/injection.dart';
+import '../../../core/network/api_service.dart';
 
-class ComprehensiveReviewScreen extends StatelessWidget {
+class ComprehensiveReviewScreen extends StatefulWidget {
   final int wordId;
 
   const ComprehensiveReviewScreen({super.key, required this.wordId});
 
   @override
+  State<ComprehensiveReviewScreen> createState() => _ComprehensiveReviewScreenState();
+}
+
+class _ComprehensiveReviewScreenState extends State<ComprehensiveReviewScreen> {
+  final ApiService _apiService = getIt<ApiService>();
+  WordProgressDetail? _wordProgress;
+  bool _loadingProgress = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWordProgress();
+  }
+
+  Future<void> _loadWordProgress() async {
+    try {
+      final progress = await _apiService.getWordProgress(widget.wordId);
+      if (mounted) {
+        setState(() {
+          _wordProgress = progress;
+          _loadingProgress = false;
+        });
+      }
+    } catch (e) {
+      // Word might not be in progress yet, that's okay
+      if (mounted) {
+        setState(() {
+          _loadingProgress = false;
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: BlocProvider(
-        create: (context) => WordDetailBloc()..add(LoadReviewPage(wordId)),
+        create: (context) => WordDetailBloc()..add(LoadReviewPage(widget.wordId)),
         child: BlocBuilder<WordDetailBloc, WordDetailState>(
           builder: (context, state) {
             if (state is WordDetailLoading) {
@@ -42,7 +80,7 @@ class ComprehensiveReviewScreen extends StatelessWidget {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const SizedBox(height: 40),
+                                const SizedBox(height: 60),
                                 // Category at center above the word
                                 if (data.category != null) ...[
                                   _buildCategoryChip(context, data.category!.name),
@@ -69,7 +107,7 @@ class ComprehensiveReviewScreen extends StatelessWidget {
                                 // Tone chip only
                                 if (data.tone != null)
                                   _buildToneChip(context, data.tone!),
-                                const SizedBox(height: 40),
+                                const SizedBox(height: 20),
                               ],
                             ),
                           ),
@@ -81,6 +119,19 @@ class ComprehensiveReviewScreen extends StatelessWidget {
                   if (data.etymology != null)
                     SliverToBoxAdapter(
                       child: _ExpandableEtymology(etymology: data.etymology!),
+                    ),
+                  // Progress Level Indicator - above Definitions
+                  if (_wordProgress != null)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 2.h),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            _buildProgressLevelIndicator(_wordProgress!.fibonacciLevel),
+                          ],
+                        ),
+                      ),
                     ),
                   // All Definitions (horizontal scrollable)
                   SliverToBoxAdapter(
@@ -737,7 +788,7 @@ Widget _buildToneChip(BuildContext context, String tone) {
           tone.toUpperCase(),
           style: TextStyle(
             color: color,
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -809,5 +860,24 @@ Widget _buildPartOfSpeechChip(BuildContext context, String pos) {
         fontWeight: FontWeight.w600,
       ),
     ),
+  );
+}
+
+Widget _buildProgressLevelIndicator(int level) {
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: List.generate(10, (index) {
+      final isActive = index < level;
+      return AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        width: 3.w,
+        height: isActive ? 12.h : 12.h,
+        margin: EdgeInsets.symmetric(horizontal: 2.w),
+        decoration: BoxDecoration(
+          color: isActive ? Colors.blue : Colors.grey[300],
+          borderRadius: BorderRadius.circular(2.r),
+        ),
+      );
+    }),
   );
 }

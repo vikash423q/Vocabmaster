@@ -145,11 +145,14 @@ async def explain_word(request: ExplainRequest):
 async def generate_story(request: StoryRequest):
     """Generate guided learning story."""
     try:
-        narrative = agent.generate_story(
+        story_data = agent.generate_story(
             words=request.words,
             user_level=request.user_level
         )
-        return {"narrative": narrative}
+        return {
+            "title": story_data.get("title", "A Learning Adventure"),
+            "narrative": story_data.get("narrative", "")
+        }
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

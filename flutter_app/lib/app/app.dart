@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app_router.dart';
 import 'theme/app_theme.dart';
+import '../core/services/notification_service.dart';
 
 class VocabMasterApp extends StatefulWidget {
   const VocabMasterApp({super.key});
@@ -23,7 +25,30 @@ class VocabMasterAppState extends State<VocabMasterApp> {
   @override
   void initState() {
     super.initState();
-    _loadThemeMode();
+    _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    await _loadThemeMode();
+    await _initializeNotifications();
+  }
+
+  Future<void> _initializeNotifications() async {
+    // Initialize notification service
+    await NotificationService().initialize();
+    
+    // Restore scheduled notifications if they were enabled
+    final prefs = await SharedPreferences.getInstance();
+    final notificationsEnabled = prefs.getBool('notifications_enabled') ?? false;
+    if (notificationsEnabled) {
+      final hour = prefs.getInt('notification_hour') ?? 9;
+      final minute = prefs.getInt('notification_minute') ?? 0;
+      await NotificationService().scheduleReviewReminder(
+        hour: hour,
+        minute: minute,
+        enabled: true,
+      );
+    }
   }
 
   Future<void> _loadThemeMode() async {
@@ -46,14 +71,21 @@ class VocabMasterAppState extends State<VocabMasterApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'VocabMaster',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: _themeMode,
-      debugShowCheckedModeBanner: false,
-      onGenerateRoute: AppRouter.generateRoute,
-      initialRoute: AppRouter.splash,
+    return ScreenUtilInit(
+      designSize: const Size(375, 812), // iPhone X design size
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+        return MaterialApp(
+          title: 'VocabMaster',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: _themeMode,
+          debugShowCheckedModeBanner: false,
+          onGenerateRoute: AppRouter.generateRoute,
+          initialRoute: AppRouter.splash,
+        );
+      },
     );
   }
 }

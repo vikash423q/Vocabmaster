@@ -94,6 +94,7 @@ Map<String, dynamic> _$$StoryGenerateRequestImplToJson(
 _$StoryResponseImpl _$$StoryResponseImplFromJson(Map<String, dynamic> json) =>
     _$StoryResponseImpl(
       storyId: (json['story_id'] as num).toInt(),
+      title: json['title'] as String,
       narrative: json['narrative'] as String,
       wordIds: (json['word_ids'] as List<dynamic>)
           .map((e) => (e as num).toInt())
@@ -104,6 +105,7 @@ _$StoryResponseImpl _$$StoryResponseImplFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$$StoryResponseImplToJson(_$StoryResponseImpl instance) =>
     <String, dynamic>{
       'story_id': instance.storyId,
+      'title': instance.title,
       'narrative': instance.narrative,
       'word_ids': instance.wordIds,
       'story_type': instance.storyType,

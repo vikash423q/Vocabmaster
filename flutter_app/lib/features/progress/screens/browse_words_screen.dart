@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/di/injection.dart';
 import '../../../core/network/api_service.dart';
 import '../../../core/models/models.dart';
@@ -37,7 +38,8 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
     super.initState();
     // Check if we should use progress API based on filter
     final filter = widget.arguments?['filter'] as String?;
-    _useProgressAPI = filter != null && (filter == 'mastered' || filter == 'learning' || filter == 'reviewing');
+    // Use progress API for 'all' filter too, to show only words in progress
+    _useProgressAPI = filter != null && (filter == 'all' || filter == 'mastered' || filter == 'learning' || filter == 'reviewing');
     _searchController.addListener(_onSearchChanged);
     _scrollController.addListener(_onScroll);
     _loadCategories();
@@ -53,6 +55,12 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
   }
 
   void _onScroll() {
+    // Disable pagination for 'all' filter to prevent loading all words
+    final filter = widget.arguments?['filter'] as String?;
+    if (filter == 'all' && _useProgressAPI) {
+      return; // Don't load more for 'all' filter
+    }
+    
     // Load more when user scrolls near the bottom (within 200 pixels)
     if (_scrollController.position.pixels >= 
         _scrollController.position.maxScrollExtent - 200) {
@@ -61,6 +69,12 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
   }
 
   Future<void> _loadMoreIfNeeded() async {
+    // Disable pagination for 'all' filter to prevent loading all words
+    final filter = widget.arguments?['filter'] as String?;
+    if (filter == 'all' && _useProgressAPI) {
+      return; // Don't load more for 'all' filter
+    }
+    
     if (!_hasMore || _loading || _loadingMore) return;
     
     await _loadWords(append: true);
@@ -90,6 +104,32 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
       setState(() {
         _categories = categories;
       });
+      
+      // If subcategory_id is passed in arguments, find and set it
+      final subcategoryIdArg = widget.arguments?['subcategory_id'] as int?;
+      if (subcategoryIdArg != null) {
+        final subcategory = categories.firstWhere(
+          (c) => c.id == subcategoryIdArg,
+          orElse: () => categories.first,
+        );
+        // Find parent category
+        if (subcategory.parentCategoryId != null) {
+          final parent = categories.firstWhere(
+            (c) => c.id == subcategory.parentCategoryId,
+            orElse: () => categories.first,
+          );
+          setState(() {
+            _selectedCategory = parent;
+            _selectedSubCategory = subcategory;
+          });
+        } else {
+          setState(() {
+            _selectedCategory = subcategory;
+          });
+        }
+        // Load words with the category filter
+        _loadWords();
+      }
     } catch (e) {
       // Silently fail category loading - it's not critical
     }
@@ -121,6 +161,7 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
       
       if (_useProgressAPI) {
         // Use progress words API for status filters with category, subcategory, and search
+        // For 'all' filter, pass 'all' which the API service will handle correctly
         final response = await _apiService.getProgressWords(
           status: filter,
           categoryId: _selectedCategory?.id,
@@ -151,8 +192,9 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
             _words.addAll(convertedWords);
             _loadingMore = false;
           } else {
-            _progressWords = response.words;
-            _words = convertedWords;
+            // Create modifiable copies of the lists
+            _progressWords = List<ProgressWord>.from(response.words);
+            _words = List<WordListItem>.from(convertedWords);
             _loading = false;
           }
           _hasMore = hasMore;
@@ -186,7 +228,8 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
             _words.addAll(words);
             _loadingMore = false;
           } else {
-            _words = words;
+            // Create modifiable copy of the list
+            _words = List<WordListItem>.from(words);
             _loading = false;
           }
           _hasMore = hasMore;
@@ -227,13 +270,6 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
       final isMastered = response['is_mastered'] as bool? ?? true;
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(isMastered 
-              ? 'Word marked as mastered!' 
-              : 'Word unmarked as mastered!'),
-          ),
-        );
         // Update the status in progress words if available
         setState(() {
           final progressWordIndex = _progressWords.indexWhere((w) => w.id == wordId);
@@ -278,6 +314,14 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
             _loadWords();
           }
         });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isMastered 
+              ? 'Word marked as mastered!' 
+              : 'Word unmarked as mastered!'),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -331,15 +375,15 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
         children: [
           // Search bar
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search words...',
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: Icon(Icons.search, size: 20.sp),
                 suffixIcon: _searchQuery.isNotEmpty || _selectedCategory != null
                     ? IconButton(
-                        icon: const Icon(Icons.clear),
+                        icon: Icon(Icons.clear, size: 20.sp),
                         onPressed: () {
                           _searchDebounceTimer?.cancel();
                           _searchController.clear();
@@ -353,14 +397,14 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
                       )
                     : null,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
               ),
             ),
           ),
           // Category filters
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
             child: Row(
               children: [
                 Expanded(
@@ -368,9 +412,9 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
                     decoration: InputDecoration(
                       labelText: 'Category',
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                       isDense: true,
                     ),
                     isExpanded: true,
@@ -399,15 +443,15 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
                     },
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: DropdownButtonFormField<Category?>(
                     decoration: InputDecoration(
                       labelText: 'Sub-Category',
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                       isDense: true,
                       enabled: _selectedCategory != null,
                     ),
@@ -439,7 +483,7 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           // Words list
           Expanded(
             child: _loading && _words.isEmpty
@@ -450,7 +494,7 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(_error!),
-                            const SizedBox(height: 16),
+                            SizedBox(height: 16.h),
                             ElevatedButton(
                               onPressed: () => _loadWords(),
                               child: const Text('Retry'),
@@ -461,21 +505,21 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
                     : _words.isEmpty
                         ? Center(
                             child: Padding(
-                              padding: const EdgeInsets.all(24.0),
+                              padding: EdgeInsets.all(24.w),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(
                                     Icons.search_off,
-                                    size: 64,
+                                    size: 64.sp,
                                     color: Colors.grey[400],
                                   ),
-                                  const SizedBox(height: 16),
+                                  SizedBox(height: 16.h),
                                   Text(
                                     'No words found',
                                     style: Theme.of(context).textTheme.titleLarge,
                                   ),
-                                  const SizedBox(height: 8),
+                                  SizedBox(height: 8.h),
                                   Text(
                                     widget.arguments?['filter'] != null
                                         ? 'You don\'t have any ${_getFilterTitle().toLowerCase()} yet.'
@@ -495,10 +539,10 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
                             itemBuilder: (context, index) {
                               if (index == _words.length) {
                                 // Show loading indicator at the bottom when loading more
-                                return const Center(
+                                return Center(
                                   child: Padding(
-                                    padding: EdgeInsets.all(16),
-                                    child: CircularProgressIndicator(),
+                                    padding: EdgeInsets.all(16.w),
+                                    child: const CircularProgressIndicator(),
                                   ),
                                 );
                               }
@@ -532,121 +576,206 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
                               }
                               
                               return Card(
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 4,
+                                margin: EdgeInsets.symmetric(
+                                  horizontal: 16.w,
+                                  vertical: 4.h,
                                 ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      // Badges at top right in scrollable container
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: SingleChildScrollView(
-                                          scrollDirection: Axis.horizontal,
-                                          reverse: true,
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Chip(
-                                                label: Text(
-                                                  'Level ${word.difficultyLevel.toStringAsFixed(1)}',
-                                                  style: const TextStyle(fontSize: 8),
-                                                ),
-                                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                visualDensity: VisualDensity.compact,
-                                                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                                                labelStyle: TextStyle(
-                                                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                                                ),
-                                              ),
-                                              if (categoryName != null && categoryName.isNotEmpty) ...[
-                                                const SizedBox(width: 4),
-                                                Chip(
-                                                  label: Text(
-                                                    categoryName,
-                                                    style: const TextStyle(fontSize: 8),
-                                                  ),
-                                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                  visualDensity: VisualDensity.compact,
-                                                  backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                                                  labelStyle: TextStyle(
-                                                    color: Theme.of(context).colorScheme.onSecondaryContainer,
-                                                  ),
-                                                ),
-                                              ],
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      // Word and buttons row
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                child: InkWell(
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      AppRouter.wordDetail,
+                                      arguments: {'wordId': word.id},
+                                    );
+                                  },
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        // Badges at top right in scrollable container
+                                        Align(
+                                          alignment: Alignment.topLeft,
+                                          child: SingleChildScrollView(
+                                            scrollDirection: Axis.horizontal,
+                                            reverse: true,
+                                            child: Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                Text(
-                                                  word.word,
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 18,
-                                                  ),
-                                                ),
-                                                if (word.pronunciation != null)
-                                                  Text(
-                                                    word.pronunciation!,
-                                                    style: TextStyle(
-                                                      fontStyle: FontStyle.italic,
-                                                      color: Colors.grey[600],
-                                                      fontSize: 12,
+                                                Container(
+                                                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                                                  decoration: BoxDecoration(
+                                                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                                                    borderRadius: BorderRadius.circular(10.r),
+                                                    border: Border.all(
+                                                      color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                                                      width: 0.5.w,
                                                     ),
                                                   ),
+                                                  child: Text(
+                                                    'Level ${word.difficultyLevel.toStringAsFixed(1)}',
+                                                    style: TextStyle(
+                                                      fontSize: 10.sp,
+                                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                                      fontWeight: FontWeight.w400,
+                                                    ),
+                                                  ),
+                                                ),
+                                                if (categoryName != null && categoryName.isNotEmpty) ...[
+                                                  SizedBox(width: 6.w),
+                                                  Container(
+                                                    padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                                                    decoration: BoxDecoration(
+                                                      color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                                                      borderRadius: BorderRadius.circular(10.r),
+                                                      border: Border.all(
+                                                        color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                                                        width: 0.5.w,
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      categoryName,
+                                                      style: TextStyle(
+                                                        fontSize: 10.sp,
+                                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                                        fontWeight: FontWeight.w400,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
                                               ],
                                             ),
                                           ),
-                                          // Action buttons
-                                          IconButton(
-                                            icon: const Icon(Icons.add_circle_outline, size: 24),
-                                            tooltip: 'Add to Stack',
-                                            onPressed: () => _addToStack(word.id),
-                                            padding: EdgeInsets.zero,
-                                            constraints: const BoxConstraints(),
-                                          ),
-                                          // Mastered toggle
-                                          Tooltip(
-                                            message: _isWordMastered(word.id) 
-                                              ? 'Mark as Not Mastered' 
-                                              : 'Mark as Mastered',
-                                            child: Switch(
-                                              value: _isWordMastered(word.id),
-                                              onChanged: (value) => _toggleMastered(word.id),
-                                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                        SizedBox(height: 6.h),
+                                        // Word and buttons row
+                                        Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    word.word,
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 20.sp,
+                                                    ),
+                                                  ),
+                                                  if (word.pronunciation != null)
+                                                    Padding(
+                                                      padding: EdgeInsets.only(top: 2.h),
+                                                      child: Text(
+                                                        word.pronunciation!,
+                                                        style: TextStyle(
+                                                          fontStyle: FontStyle.italic,
+                                                          color: Colors.grey[600],
+                                                          fontSize: 12.sp,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                          IconButton(
-                                            icon: const Icon(Icons.arrow_forward, size: 24),
-                                            tooltip: 'View Details',
-                                            onPressed: () {
-                                              Navigator.pushNamed(
-                                                context,
-                                                AppRouter.wordDetail,
-                                                arguments: {'wordId': word.id},
-                                              );
-                                            },
-                                            padding: EdgeInsets.zero,
-                                            constraints: const BoxConstraints(),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                                            SizedBox(width: 8.w),
+                                            // Buttons stacked vertically
+                                            Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              crossAxisAlignment: CrossAxisAlignment.end,
+                                              children: [
+                                                // Add to Stack button
+                                                InkWell(
+                                                  onTap: () => _addToStack(word.id),
+                                                  borderRadius: BorderRadius.circular((8 * 0.8).r),
+                                                  child: Container(
+                                                    width: 120.w * 0.8,
+                                                    height: 32.h * 0.8,
+                                                    padding: EdgeInsets.symmetric(horizontal: 8.w * 0.8),
+                                                    decoration: BoxDecoration(
+                                                      color: Theme.of(context).colorScheme.primaryContainer,
+                                                      borderRadius: BorderRadius.circular((8 * 0.8).r),
+                                                      border: Border.all(
+                                                        color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                                                      ),
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                      children: [
+                                                        Icon(
+                                                          Icons.add_circle_outline,
+                                                          size: 14.sp * 0.8,
+                                                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                                        ),
+                                                        SizedBox(width: 4.w * 0.8),
+                                                        Text(
+                                                          'Add to Stack',
+                                                          style: TextStyle(
+                                                            fontSize: 11.sp * 0.8,
+                                                            fontWeight: FontWeight.w500,
+                                                            color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                                SizedBox(height: 6.h * 0.8),
+                                                // I know button
+                                                InkWell(
+                                                  onTap: () => _toggleMastered(word.id),
+                                                  borderRadius: BorderRadius.circular((8 * 0.8).r),
+                                                  child: Container(
+                                                    width: 120.w * 0.8,
+                                                    height: 32.h * 0.8,
+                                                    padding: EdgeInsets.symmetric(horizontal: 8.w * 0.8),
+                                                    decoration: BoxDecoration(
+                                                      color: _isWordMastered(word.id)
+                                                          ? Theme.of(context).colorScheme.secondaryContainer
+                                                          : Theme.of(context).colorScheme.surfaceContainerHighest,
+                                                      borderRadius: BorderRadius.circular((8 * 0.8).r),
+                                                      border: Border.all(
+                                                        color: _isWordMastered(word.id)
+                                                            ? Theme.of(context).colorScheme.secondary.withOpacity(0.3)
+                                                            : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                                                      ),
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                      children: [
+                                                        Icon(
+                                                          _isWordMastered(word.id) ? Icons.check_circle : Icons.check_circle_outline,
+                                                          size: 14.sp * 0.8,
+                                                          color: _isWordMastered(word.id)
+                                                              ? Theme.of(context).colorScheme.onSecondaryContainer
+                                                              : Theme.of(context).colorScheme.onSurfaceVariant,
+                                                        ),
+                                                        SizedBox(width: 4.w * 0.8),
+                                                        Text(
+                                                          _isWordMastered(word.id) ? 'Mark Unlearned' : 'Mark Learned',
+                                                          style: TextStyle(
+                                                            fontSize: 11.sp * 0.8,
+                                                            fontWeight: FontWeight.w500,
+                                                            color: _isWordMastered(word.id)
+                                                                ? Theme.of(context).colorScheme.onSecondaryContainer
+                                                                : Theme.of(context).colorScheme.onSurfaceVariant,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               );

@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 part 'category.freezed.dart';
 part 'category.g.dart';
@@ -9,8 +10,8 @@ class Category with _$Category {
     required int id,
     required String name,
     String? description,
-    int? parentCategoryId,
-    @Default(5.0) double importanceWeight,
+    @JsonKey(name: 'parent_category_id') int? parentCategoryId,
+    @JsonKey(name: 'importance_weight') @Default(5.0) double importanceWeight,
   }) = _Category;
 
   factory Category.fromJson(Map<String, dynamic> json) =>

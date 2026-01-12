@@ -10,6 +10,8 @@ import '../features/assessment/screens/stack_recommendation_screen.dart';
 import '../features/assessment/bloc/assessment_bloc.dart';
 import '../features/main_navigation/screens/main_navigation_screen.dart';
 import '../features/progress/screens/browse_words_screen.dart';
+import '../features/progress/screens/category_exploration_screen.dart';
+import '../features/progress/screens/subcategories_screen.dart';
 
 class AppRouter {
   static const String splash = '/';
@@ -25,6 +27,8 @@ class AppRouter {
   static const String progress = '/progress';
   static const String guidedStory = '/guided-story';
   static const String browseWords = '/browse-words';
+  static const String categoryExploration = '/category-exploration';
+  static const String subcategories = '/subcategories';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -73,6 +77,23 @@ class AppRouter {
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (_) => BrowseWordsScreen(arguments: args),
+        );
+      case categoryExploration:
+        return MaterialPageRoute(
+          builder: (_) => const CategoryExplorationScreen(),
+        );
+      case subcategories:
+        final args = settings.arguments as Map<String, dynamic>?;
+        final category = args?['category'];
+        if (category == null) {
+          return MaterialPageRoute(
+            builder: (_) => Scaffold(
+              body: Center(child: Text('Category not provided')),
+            ),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => SubcategoriesScreen(parentCategory: category),
         );
       default:
         return MaterialPageRoute(

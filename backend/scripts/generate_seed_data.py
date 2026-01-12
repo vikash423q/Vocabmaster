@@ -279,6 +279,66 @@ def upload_to_minio(file_path: Path, word: str, index: int, minio_client: Minio)
     except Exception as e:
         print(f"    ❌ Upload error: {str(e)}")
         return None
+    
+def populate_media(word: str, minio_client: Minio) -> List[Dict]:
+    """Populate media URLs for a word by downloading from Pixabay and uploading to MinIO."""
+    print(f"  🖼️  Getting images from Pixabay...")
+    pixabay_images = []
+    try:
+        pixabay_images = get_pixabay_images(word, count=4)
+        print(f"    ✓ Found {len(pixabay_images)} images")
+    except Exception as e:
+        error_msg = f"Pixabay error: {str(e)}"
+        print(f"  ⚠️  {error_msg}")
+        # Don't fail the word if Pixabay fails, just continue without images
+    
+    # Step 4: Download and upload images
+    media_urls = []
+    if pixabay_images:
+        try:
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp_path = Path(temp_dir)
+                for idx, img_data in enumerate(pixabay_images):
+                    try:
+                        print(f"    Downloading image {idx + 1}/{len(pixabay_images)}...")
+                        downloaded_file = download_image(
+                            img_data["url"],
+                            temp_path,
+                            word,
+                            idx
+                        )
+                        
+                        if downloaded_file:
+                            try:
+                                print(f"    Uploading to MinIO...")
+                                minio_url = upload_to_minio(
+                                    downloaded_file,
+                                    word,
+                                    idx,
+                                    minio_client
+                                )
+                                if minio_url:
+                                    media_urls.append({
+                                        "type": "image",
+                                        "url": minio_url,
+                                        "source": f"Pixabay: {img_data.get('tags', '')}",
+                                        "caption": f"Image related to '{word}'",
+                                        "is_ai_generated": False
+                                    })
+                                    print(f"    ✓ Image {idx + 1} uploaded successfully")
+                                else:
+                                    print(f"    ⚠️  Failed to upload image {idx + 1} to MinIO")
+                            except Exception as e:
+                                print(f"    ⚠️  MinIO upload error for image {idx + 1}: {str(e)}")
+                        else:
+                            print(f"    ⚠️  Failed to download image {idx + 1}")
+                    except Exception as e:
+                        print(f"    ⚠️  Error processing image {idx + 1}: {str(e)}")
+                        # Continue with next image
+        except Exception as e:
+            error_msg = f"Image processing error: {str(e)}"
+            print(f"  ⚠️  {error_msg}")
+            # Don't fail the word if image processing fails
 
 
 def process_word(
@@ -334,64 +394,9 @@ def process_word(
             print(f"  ⚠️  {error_msg}")
             # Don't fail the word if category detection fails, just log it
         
-        # Step 3: Get images from Pixabay
-        print(f"  🖼️  Getting images from Pixabay...")
-        pixabay_images = []
-        try:
-            pixabay_images = get_pixabay_images(word, count=4)
-            print(f"    ✓ Found {len(pixabay_images)} images")
-        except Exception as e:
-            error_msg = f"Pixabay error: {str(e)}"
-            print(f"  ⚠️  {error_msg}")
-            # Don't fail the word if Pixabay fails, just continue without images
-        
-        # Step 4: Download and upload images
-        media_urls = []
-        if pixabay_images:
-            try:
-                with tempfile.TemporaryDirectory() as temp_dir:
-                    temp_path = Path(temp_dir)
-                    for idx, img_data in enumerate(pixabay_images):
-                        try:
-                            print(f"    Downloading image {idx + 1}/{len(pixabay_images)}...")
-                            downloaded_file = download_image(
-                                img_data["url"],
-                                temp_path,
-                                word,
-                                idx
-                            )
-                            
-                            if downloaded_file:
-                                try:
-                                    print(f"    Uploading to MinIO...")
-                                    minio_url = upload_to_minio(
-                                        downloaded_file,
-                                        word,
-                                        idx,
-                                        minio_client
-                                    )
-                                    if minio_url:
-                                        media_urls.append({
-                                            "type": "image",
-                                            "url": minio_url,
-                                            "source": f"Pixabay: {img_data.get('tags', '')}",
-                                            "caption": f"Image related to '{word}'",
-                                            "is_ai_generated": False
-                                        })
-                                        print(f"    ✓ Image {idx + 1} uploaded successfully")
-                                    else:
-                                        print(f"    ⚠️  Failed to upload image {idx + 1} to MinIO")
-                                except Exception as e:
-                                    print(f"    ⚠️  MinIO upload error for image {idx + 1}: {str(e)}")
-                            else:
-                                print(f"    ⚠️  Failed to download image {idx + 1}")
-                        except Exception as e:
-                            print(f"    ⚠️  Error processing image {idx + 1}: {str(e)}")
-                            # Continue with next image
-            except Exception as e:
-                error_msg = f"Image processing error: {str(e)}"
-                print(f"  ⚠️  {error_msg}")
-                # Don't fail the word if image processing fails
+        # Step 3: Get images from Pixabay and upload to MinIO
+        print(f"  ☁️  Populating media...")
+        populate_media(word, minio_client)
         
         # Step 5: Build word data structure
         try:
@@ -498,36 +503,42 @@ def main():
     print(f"\n🤖 AI Service URL: {ai_service_url}")
     
     # Process words
-    all_word_data = []
+    with open(OUTPUT_FILE, 'r') as f:
+        try:
+            all_word_data = json.load(f)
+        except Exception:
+            all_word_data = []
     
     # Process GRE words
     print(f"\n{'=' * 60}")
     print("📖 Processing GRE words...")
     print(f"{'=' * 60}")
     for word in gre_words:
-        word_data = process_word(word, "GRE", ai_service_url, minio_client, progress)
-        if word_data:
-            all_word_data.append(word_data)
-            # Save incrementally
-            with open(OUTPUT_FILE, 'w') as f:
-                json.dump(all_word_data, f, indent=2)
+        populate_media(word, minio_client)
+        # word_data = process_word(word, "GRE", ai_service_url, minio_client, progress)
+        # if word_data:
+        #     all_word_data.append(word_data)
+        #     # Save incrementally
+        #     with open(OUTPUT_FILE, 'w') as f:
+        #         json.dump(all_word_data, f, indent=2)
     
     # Process WPME words
     print(f"\n{'=' * 60}")
     print("📖 Processing WPME words...")
     print(f"{'=' * 60}")
     for word in wpme_words:
-        word_data = process_word(word, "WordPower", ai_service_url, minio_client, progress)
-        if word_data:
-            all_word_data.append(word_data)
-            # Save incrementally
-            with open(OUTPUT_FILE, 'w') as f:
-                json.dump(all_word_data, f, indent=2)
+        populate_media(word, minio_client)
+        # word_data = process_word(word, "WordPower", ai_service_url, minio_client, progress)
+        # if word_data:
+        #     all_word_data.append(word_data)
+        #     # Save incrementally
+        #     with open(OUTPUT_FILE, 'w') as f:
+        #         json.dump(all_word_data, f, indent=2)
     
     # Final save
-    print(f"\n💾 Saving final data...")
-    with open(OUTPUT_FILE, 'w') as f:
-        json.dump(all_word_data, f, indent=2)
+    # print(f"\n💾 Saving final data...")
+    # with open(OUTPUT_FILE, 'w') as f:
+    #     json.dump(all_word_data, f, indent=2)
     
     print(f"\n{'=' * 60}")
     print("✅ Generation Complete!")

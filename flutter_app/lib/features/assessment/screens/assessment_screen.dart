@@ -14,42 +14,33 @@ class AssessmentScreen extends StatefulWidget {
 }
 
 class _AssessmentScreenState extends State<AssessmentScreen> {
+  bool _isFirstTime = true;
+  bool _checkingFirstTime = true;
+
   @override
   void initState() {
     super.initState();
+    _checkIfFirstTime();
     context.read<AssessmentBloc>().add(LoadAssessmentStack());
   }
 
-  String _getFunkyHeading(int index, int total, Map<int, String> responses) {
-    final completed = responses.length;
-    final percentage = (completed / total) * 100;
-
-    if (completed == 0) {
-      return "🚀 Let's discover your vocabulary superpowers!";
-    } else if (completed < 5) {
-      return "💪 You're on fire! Keep going!";
-    } else if (completed < 10) {
-      return "🌟 Amazing progress! You're crushing it!";
-    } else if (completed < 15) {
-      return "🎯 Halfway there! You're doing fantastic!";
-    } else if (completed < 20) {
-      return "🔥 Almost there! Your vocabulary is impressive!";
-    } else if (completed < 25) {
-      return "⚡ Final stretch! You're a word wizard!";
-    } else {
-      return "🎉 Last few! You're absolutely brilliant!";
-    }
-  }
-
-  String _getEncouragement(int correctCount) {
-    if (correctCount < 5) {
-      return "Every word is a step forward! 📚";
-    } else if (correctCount < 10) {
-      return "You're building an amazing vocabulary! 🌟";
-    } else if (correctCount < 15) {
-      return "Your knowledge is impressive! 💎";
-    } else {
-      return "You're a vocabulary master! 👑";
+  Future<void> _checkIfFirstTime() async {
+    try {
+      final apiService = getIt<ApiService>();
+      final stats = await apiService.getStats();
+      if (mounted) {
+        setState(() {
+          _isFirstTime = stats.learningWords == 0 && stats.masteredWords == 0 && stats.reviewingWords == 0;
+          _checkingFirstTime = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isFirstTime = true; // Default to first time on error
+          _checkingFirstTime = false;
+        });
+      }
     }
   }
 
@@ -127,20 +118,29 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
             return SafeArea(
               child: Column(
                 children: [
-                  // Progress bar
+                  // Description and progress bar
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       children: [
                         Text(
-                          _getFunkyHeading(currentIndex, total, state.responses),
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          'Assessment',
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.primary,
                               ),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 8),
+                        Text(
+                          _isFirstTime
+                              ? 'This assessment helps us understand your vocabulary knowledge base to provide better word recommendations tailored to your level.'
+                              : 'This assessment will help align your progress and ensure you\'re learning words at the right difficulty level.',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                              ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
                         LinearProgressIndicator(
                           value: completed / total,
                           backgroundColor: Colors.grey[300],
@@ -150,20 +150,9 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '$completed / $total words',
+                          '$completed of $total words',
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
-                        if (correctCount > 0) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            _getEncouragement(correctCount),
-                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                  color: Colors.green,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
                       ],
                     ),
                   ),
@@ -269,7 +258,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
                                 const CircularProgressIndicator(),
                                 const SizedBox(height: 16),
                                 Text(
-                                  'All done! Getting recommendations...',
+                                  'Processing your assessment...',
                                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
                                   ),

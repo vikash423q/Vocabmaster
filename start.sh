@@ -28,6 +28,12 @@ EOF
     echo "✅ Created .env file. Please update ANTHROPIC_API_KEY with your actual key."
 fi
 
+mkdir -p docker/{postgres,redis,minio}
+mkdir -p docker/api/{data,logs}
+mkdir -p docker/ai-agent/{data,logs}
+mkdir -p docker/nginx/logs
+chmod -R 777 docker/postgres
+
 # Start Docker services
 echo "📦 Starting Docker services..."
 docker-compose up -d

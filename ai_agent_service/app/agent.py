@@ -208,8 +208,8 @@ Examples:
         except Exception as api_error:
             raise Exception(f"LLM API error: {str(api_error)}")
     
-    def generate_story(self, words: List[Dict[str, str]], user_level: str) -> str:
-        """Generate guided learning story."""
+    def generate_story(self, words: List[Dict[str, str]], user_level: str) -> Dict[str, str]:
+        """Generate guided learning story with title."""
         word_list = "\n".join([f"- {w['word']}: {w['definition']}" for w in words])
         
         prompt = f"""Create an engaging learning story that naturally incorporates these vocabulary words:
@@ -219,20 +219,51 @@ Examples:
 User level: {user_level}
 
 Requirements:
+- Create a short, catchy title (3-8 words) that captures the essence of the story
 - Natural narrative flow (200-300 words)
 - Each word used in context
 - Memorable and thematic
 - Educational and engaging
 - Make the story coherent and interesting
 
-Write the story now:"""
+Return your response in the following JSON format:
+{{
+    "title": "The Story Title Here",
+    "narrative": "The full story narrative here..."
+}}
+
+Return only valid JSON, no markdown formatting."""
 
         try:
-            return self._make_llm_request(
+            content = self._make_llm_request(
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=1500,
                 temperature=0.7
             )
+            
+            # Try to extract JSON from response
+            try:
+                # Remove markdown code blocks if present
+                if "```json" in content:
+                    content = content.split("```json")[1].split("```")[0].strip()
+                elif "```" in content:
+                    content = content.split("```")[1].split("```")[0].strip()
+                
+                story_data = json.loads(content)
+                
+                # Validate and set defaults
+                if "title" not in story_data or not story_data["title"]:
+                    story_data["title"] = "A Learning Adventure"
+                if "narrative" not in story_data or not story_data["narrative"]:
+                    story_data["narrative"] = content  # Fallback to full content
+                
+                return story_data
+            except json.JSONDecodeError:
+                # Fallback: create basic structure
+                return {
+                    "title": "A Learning Adventure",
+                    "narrative": content
+                }
         except Exception as api_error:
             raise Exception(f"LLM API error: {str(api_error)}")
     

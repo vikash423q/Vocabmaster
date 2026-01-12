@@ -172,6 +172,7 @@ async def generate_story(
     
     return StoryResponse(
         story_id=story.id,
+        title=result.get("title", "A Learning Adventure"),
         narrative=story.narrative,
         word_ids=story.word_ids,
         story_type=story.story_type.value

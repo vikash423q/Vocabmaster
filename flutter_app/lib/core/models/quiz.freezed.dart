@@ -1122,6 +1122,7 @@ StoryResponse _$StoryResponseFromJson(Map<String, dynamic> json) {
 mixin _$StoryResponse {
   @JsonKey(name: 'story_id')
   int get storyId => throw _privateConstructorUsedError;
+  String get title => throw _privateConstructorUsedError;
   String get narrative => throw _privateConstructorUsedError;
   @JsonKey(name: 'word_ids')
   List<int> get wordIds => throw _privateConstructorUsedError;
@@ -1146,6 +1147,7 @@ abstract class $StoryResponseCopyWith<$Res> {
   @useResult
   $Res call(
       {@JsonKey(name: 'story_id') int storyId,
+      String title,
       String narrative,
       @JsonKey(name: 'word_ids') List<int> wordIds,
       @JsonKey(name: 'story_type') String storyType});
@@ -1167,6 +1169,7 @@ class _$StoryResponseCopyWithImpl<$Res, $Val extends StoryResponse>
   @override
   $Res call({
     Object? storyId = null,
+    Object? title = null,
     Object? narrative = null,
     Object? wordIds = null,
     Object? storyType = null,
@@ -1176,6 +1179,10 @@ class _$StoryResponseCopyWithImpl<$Res, $Val extends StoryResponse>
           ? _value.storyId
           : storyId // ignore: cast_nullable_to_non_nullable
               as int,
+      title: null == title
+          ? _value.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String,
       narrative: null == narrative
           ? _value.narrative
           : narrative // ignore: cast_nullable_to_non_nullable
@@ -1202,6 +1209,7 @@ abstract class _$$StoryResponseImplCopyWith<$Res>
   @useResult
   $Res call(
       {@JsonKey(name: 'story_id') int storyId,
+      String title,
       String narrative,
       @JsonKey(name: 'word_ids') List<int> wordIds,
       @JsonKey(name: 'story_type') String storyType});
@@ -1221,6 +1229,7 @@ class __$$StoryResponseImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? storyId = null,
+    Object? title = null,
     Object? narrative = null,
     Object? wordIds = null,
     Object? storyType = null,
@@ -1230,6 +1239,10 @@ class __$$StoryResponseImplCopyWithImpl<$Res>
           ? _value.storyId
           : storyId // ignore: cast_nullable_to_non_nullable
               as int,
+      title: null == title
+          ? _value.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String,
       narrative: null == narrative
           ? _value.narrative
           : narrative // ignore: cast_nullable_to_non_nullable
@@ -1251,6 +1264,7 @@ class __$$StoryResponseImplCopyWithImpl<$Res>
 class _$StoryResponseImpl implements _StoryResponse {
   const _$StoryResponseImpl(
       {@JsonKey(name: 'story_id') required this.storyId,
+      required this.title,
       required this.narrative,
       @JsonKey(name: 'word_ids') required final List<int> wordIds,
       @JsonKey(name: 'story_type') required this.storyType})
@@ -1262,6 +1276,8 @@ class _$StoryResponseImpl implements _StoryResponse {
   @override
   @JsonKey(name: 'story_id')
   final int storyId;
+  @override
+  final String title;
   @override
   final String narrative;
   final List<int> _wordIds;
@@ -1279,7 +1295,7 @@ class _$StoryResponseImpl implements _StoryResponse {
 
   @override
   String toString() {
-    return 'StoryResponse(storyId: $storyId, narrative: $narrative, wordIds: $wordIds, storyType: $storyType)';
+    return 'StoryResponse(storyId: $storyId, title: $title, narrative: $narrative, wordIds: $wordIds, storyType: $storyType)';
   }
 
   @override
@@ -1288,6 +1304,7 @@ class _$StoryResponseImpl implements _StoryResponse {
         (other.runtimeType == runtimeType &&
             other is _$StoryResponseImpl &&
             (identical(other.storyId, storyId) || other.storyId == storyId) &&
+            (identical(other.title, title) || other.title == title) &&
             (identical(other.narrative, narrative) ||
                 other.narrative == narrative) &&
             const DeepCollectionEquality().equals(other._wordIds, _wordIds) &&
@@ -1297,7 +1314,7 @@ class _$StoryResponseImpl implements _StoryResponse {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, storyId, narrative,
+  int get hashCode => Object.hash(runtimeType, storyId, title, narrative,
       const DeepCollectionEquality().hash(_wordIds), storyType);
 
   /// Create a copy of StoryResponse
@@ -1319,6 +1336,7 @@ class _$StoryResponseImpl implements _StoryResponse {
 abstract class _StoryResponse implements StoryResponse {
   const factory _StoryResponse(
           {@JsonKey(name: 'story_id') required final int storyId,
+          required final String title,
           required final String narrative,
           @JsonKey(name: 'word_ids') required final List<int> wordIds,
           @JsonKey(name: 'story_type') required final String storyType}) =
@@ -1330,6 +1348,8 @@ abstract class _StoryResponse implements StoryResponse {
   @override
   @JsonKey(name: 'story_id')
   int get storyId;
+  @override
+  String get title;
   @override
   String get narrative;
   @override

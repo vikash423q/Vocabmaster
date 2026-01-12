@@ -23,7 +23,9 @@ mixin _$Category {
   int get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   String? get description => throw _privateConstructorUsedError;
+  @JsonKey(name: 'parent_category_id')
   int? get parentCategoryId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'importance_weight')
   double get importanceWeight => throw _privateConstructorUsedError;
 
   /// Serializes this Category to a JSON map.
@@ -45,8 +47,8 @@ abstract class $CategoryCopyWith<$Res> {
       {int id,
       String name,
       String? description,
-      int? parentCategoryId,
-      double importanceWeight});
+      @JsonKey(name: 'parent_category_id') int? parentCategoryId,
+      @JsonKey(name: 'importance_weight') double importanceWeight});
 }
 
 /// @nodoc
@@ -107,8 +109,8 @@ abstract class _$$CategoryImplCopyWith<$Res>
       {int id,
       String name,
       String? description,
-      int? parentCategoryId,
-      double importanceWeight});
+      @JsonKey(name: 'parent_category_id') int? parentCategoryId,
+      @JsonKey(name: 'importance_weight') double importanceWeight});
 }
 
 /// @nodoc
@@ -162,8 +164,8 @@ class _$CategoryImpl implements _Category {
       {required this.id,
       required this.name,
       this.description,
-      this.parentCategoryId,
-      this.importanceWeight = 5.0});
+      @JsonKey(name: 'parent_category_id') this.parentCategoryId,
+      @JsonKey(name: 'importance_weight') this.importanceWeight = 5.0});
 
   factory _$CategoryImpl.fromJson(Map<String, dynamic> json) =>
       _$$CategoryImplFromJson(json);
@@ -175,9 +177,10 @@ class _$CategoryImpl implements _Category {
   @override
   final String? description;
   @override
+  @JsonKey(name: 'parent_category_id')
   final int? parentCategoryId;
   @override
-  @JsonKey()
+  @JsonKey(name: 'importance_weight')
   final double importanceWeight;
 
   @override
@@ -223,11 +226,12 @@ class _$CategoryImpl implements _Category {
 
 abstract class _Category implements Category {
   const factory _Category(
-      {required final int id,
-      required final String name,
-      final String? description,
-      final int? parentCategoryId,
-      final double importanceWeight}) = _$CategoryImpl;
+          {required final int id,
+          required final String name,
+          final String? description,
+          @JsonKey(name: 'parent_category_id') final int? parentCategoryId,
+          @JsonKey(name: 'importance_weight') final double importanceWeight}) =
+      _$CategoryImpl;
 
   factory _Category.fromJson(Map<String, dynamic> json) =
       _$CategoryImpl.fromJson;
@@ -239,8 +243,10 @@ abstract class _Category implements Category {
   @override
   String? get description;
   @override
+  @JsonKey(name: 'parent_category_id')
   int? get parentCategoryId;
   @override
+  @JsonKey(name: 'importance_weight')
   double get importanceWeight;
 
   /// Create a copy of Category

@@ -147,7 +147,7 @@ class _AiScreenState extends State<AiScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Words in Progress',
+                                'Your Learning Words',
                                 style: Theme.of(context).textTheme.titleLarge,
                               ),
                               if (_wordsInProgress != null && _wordsInProgress!.isNotEmpty)
@@ -205,8 +205,10 @@ class _AiScreenState extends State<AiScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Guided Story',
-                              style: Theme.of(context).textTheme.headlineSmall,
+                              _generatedStory!.title,
+                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(height: 16),
                             // Markdown story with emphasized words

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:math' as math;
 import '../../../core/di/injection.dart';
@@ -61,11 +62,11 @@ class _ProgressScreenState extends State<ProgressScreen> {
           children: [
             const Icon(Icons.trending_up_rounded),
             const SizedBox(width: 8),
-            const Text(
+            Text(
               'Progress',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 20,
+                fontSize: 20.sp,
               ),
             ),
           ],
@@ -90,19 +91,19 @@ class _ProgressScreenState extends State<ProgressScreen> {
               : RefreshIndicator(
                   onRefresh: _loadData,
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16.w),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         // Overview stats
                         _buildStatsSection(context),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24.h),
                         // Review calendar
                         _buildCalendarSection(context),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24.h),
                         // Actions
                         _buildActionsSection(context),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24.h),
                         // Browse words
                         _buildBrowseWordsSection(context),
                       ],
@@ -115,6 +116,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
   Widget _buildStatsSection(BuildContext context) {
     if (_stats == null) return const SizedBox.shrink();
     
+    // Calculate total words as sum of learning + reviewing + mastered
+    final totalWordsInProgress = _stats!.learningWords + _stats!.reviewingWords + _stats!.masteredWords;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -122,21 +126,22 @@ class _ProgressScreenState extends State<ProgressScreen> {
           'Overview',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
+            fontSize: 20.sp,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         Row(
           children: [
             Expanded(
               child: _StatCard(
                 title: 'Total Words',
-                value: _stats!.totalWords.toString(),
+                value: totalWordsInProgress.toString(),
                 icon: Icons.library_books,
                 color: Colors.blue,
                 onTap: () => _navigateToWordList(context, 'all'),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(
               child: _StatCard(
                 title: 'Mastered',
@@ -148,7 +153,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         Row(
           children: [
             Expanded(
@@ -160,7 +165,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 onTap: () => _navigateToWordList(context, 'learning'),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(
               child: _StatCard(
                 title: 'Reviewing',
@@ -172,28 +177,32 @@ class _ProgressScreenState extends State<ProgressScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             child: Column(
               children: [
                 Text(
                   'Accuracy Rate',
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontSize: 16.sp,
+                  ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Text(
                   '${_stats!.accuracyRate.toStringAsFixed(1)}%',
                   style: Theme.of(context).textTheme.displaySmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.primary,
+                    fontSize: 36.sp,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 LinearProgressIndicator(
                   value: _stats!.accuracyRate / 100.0,
                   backgroundColor: Colors.grey[300],
+                  minHeight: 8.h,
                 ),
               ],
             ),
@@ -208,15 +217,16 @@ class _ProgressScreenState extends State<ProgressScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Review Calendar',
+          'Progress Calendar',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
+            fontSize: 20.sp,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             child: _ReviewCalendar(
               pastReviews: _pastReviews ?? {},
               upcomingReviews: _upcomingReviews ?? {},
@@ -235,33 +245,37 @@ class _ProgressScreenState extends State<ProgressScreen> {
           onPressed: () {
             Navigator.pushNamed(context, AppRouter.stackRecommendations);
           },
-          icon: const Icon(Icons.recommend),
-          label: const Text('Recommend New Words'),
+          icon: Icon(Icons.recommend, size: 20.sp),
+          label: Text('Recommend New Words', style: TextStyle(fontSize: 16.sp)),
           style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: EdgeInsets.symmetric(vertical: 16.h),
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         ElevatedButton.icon(
           onPressed: () {
             Navigator.pushNamed(context, AppRouter.assessment);
           },
-          icon: const Icon(Icons.quiz),
-          label: const Text('Start New Assessment'),
+          icon: Icon(Icons.quiz, size: 20.sp),
+          label: Text('Start New Assessment', style: TextStyle(fontSize: 16.sp)),
           style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: EdgeInsets.symmetric(vertical: 16.h),
           ),
         ),
       ],
     );
   }
 
-  void _navigateToWordList(BuildContext context, String filter) {
-    Navigator.pushNamed(
+  void _navigateToWordList(BuildContext context, String filter) async {
+    await Navigator.pushNamed(
       context,
       AppRouter.browseWords,
       arguments: {'filter': filter},
     );
+    // Refresh stats when returning from word list
+    if (mounted) {
+      _loadData();
+    }
   }
 
   Widget _buildBrowseWordsSection(BuildContext context) {
@@ -272,9 +286,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
           'Browse All Words',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
+            fontSize: 20.sp,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         Card(
           child: ListTile(
             leading: const Icon(Icons.search),
@@ -283,6 +298,18 @@ class _ProgressScreenState extends State<ProgressScreen> {
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.pushNamed(context, AppRouter.browseWords);
+            },
+          ),
+        ),
+        SizedBox(height: 12.h),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.category),
+            title: const Text('Explore by Category'),
+            subtitle: const Text('Browse words organized by categories'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.pushNamed(context, AppRouter.categoryExploration);
             },
           ),
         ),
@@ -311,25 +338,29 @@ class _StatCard extends StatelessWidget {
     return Card(
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 16.h),
           child: Row(
             children: [
-              Icon(icon, color: color, size: 32),
-              const SizedBox(width: 16),
+              Icon(icon, color: color, size: 24.sp),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     Text(
                       value,
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
+                        fontSize: 20.sp,
                       ),
                     ),
                   ],
@@ -339,6 +370,7 @@ class _StatCard extends StatelessWidget {
                 Icon(
                   Icons.chevron_right,
                   color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                  size: 20.sp,
                 ),
             ],
           ),

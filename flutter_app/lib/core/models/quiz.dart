@@ -75,6 +75,7 @@ class StoryGenerateRequest with _$StoryGenerateRequest {
 class StoryResponse with _$StoryResponse {
   const factory StoryResponse({
     @JsonKey(name: 'story_id') required int storyId,
+    required String title,
     required String narrative,
     @JsonKey(name: 'word_ids') required List<int> wordIds,
     @JsonKey(name: 'story_type') required String storyType,

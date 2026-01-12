@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:async';
 import 'package:card_stack_swiper/card_stack_swiper.dart';
 import '../../../../app/app_router.dart';
@@ -66,11 +67,11 @@ class _DailyStackScreenState extends State<DailyStackScreen> {
                     color: Theme.of(context).colorScheme.primary,
                   ),
                   const SizedBox(width: 8),
-                  const Text(
+                  Text(
                     'Daily Review',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 20,
+                      fontSize: 20.sp,
                     ),
                   ),
                 ],
@@ -91,11 +92,11 @@ class _DailyStackScreenState extends State<DailyStackScreen> {
                     color: Theme.of(context).colorScheme.primary,
                   ),
                   const SizedBox(width: 8),
-                  const Text(
+                  Text(
                     'Daily Review',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 20,
+                      fontSize: 20.sp,
                     ),
                   ),
                 ],
@@ -128,13 +129,13 @@ class _DailyStackScreenState extends State<DailyStackScreen> {
               children: [
                 const Icon(Icons.book_outlined),
                 const SizedBox(width: 8),
-                const Text(
-                  'Daily Review',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
+                  Text(
+                    'Daily Review',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20.sp,
+                    ),
                   ),
-                ),
               ],
             ),
             actions: [
@@ -146,6 +147,7 @@ class _DailyStackScreenState extends State<DailyStackScreen> {
                       '${unreviewed.length} left',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
+                        fontSize: 16.sp,
                       ),
                     ),
                   ),
@@ -250,54 +252,60 @@ class _DailyStackScreenState extends State<DailyStackScreen> {
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: EdgeInsets.all(24.w),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               Icons.check_circle_outline,
-              size: 80,
+              size: 80.sp,
               color: Colors.grey[400],
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
             Text(
               'All caught up! 🎉',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
+                fontSize: 24.sp,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             if (_wordsInProgress != null && _wordsInProgress! > 0)
               Text(
                 'You have $_wordsInProgress ${_wordsInProgress == 1 ? 'word' : 'words'} in progress.',
-                style: Theme.of(context).textTheme.bodyLarge,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontSize: 16.sp,
+                ),
                 textAlign: TextAlign.center,
               )
             else
               Text(
                 'You don\'t have any words in progress yet.',
-                style: Theme.of(context).textTheme.bodyLarge,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontSize: 16.sp,
+                ),
                 textAlign: TextAlign.center,
               ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               'Would you like to add new words to your learning stack?',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Colors.grey[600],
+                fontSize: 14.sp,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
             ElevatedButton.icon(
               onPressed: () {
                 Navigator.pushNamed(context, AppRouter.stackRecommendations);
               },
-              icon: const Icon(Icons.add_circle_outline),
-              label: const Text('Discover New Words'),
+              icon: Icon(Icons.add_circle_outline, size: 20.sp),
+              label: Text('Discover New Words', style: TextStyle(fontSize: 16.sp)),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 16,
+                padding: EdgeInsets.symmetric(
+                  horizontal: 24.w,
+                  vertical: 16.h,
                 ),
               ),
             ),
@@ -315,7 +323,7 @@ class _DailyStackScreenState extends State<DailyStackScreen> {
             // Review count header
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.w),
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -324,6 +332,7 @@ class _DailyStackScreenState extends State<DailyStackScreen> {
                     'Reviews left for today',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
+                      fontSize: 16.sp,
                     ),
                   ),
                   Text(
@@ -331,6 +340,7 @@ class _DailyStackScreenState extends State<DailyStackScreen> {
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).colorScheme.primary,
+                      fontSize: 24.sp,
                     ),
                   ),
                 ],
@@ -340,8 +350,8 @@ class _DailyStackScreenState extends State<DailyStackScreen> {
             Expanded(
               child: Center(
                 child: SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.85,
-                  height: MediaQuery.of(context).size.height * 0.6,
+                  width: 0.85.sw,
+                  height: 0.6.sh,
                   child: CardStackSwiper(
                     controller: _swiperController,
                     cardsCount: unreviewed.length,
@@ -387,20 +397,21 @@ class _DailyStackScreenState extends State<DailyStackScreen> {
         // Navigation hint
         if (unreviewed.length > 1)
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   Icons.swipe,
-                  size: 20,
+                  size: 20.sp,
                   color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 Text(
                   'Swipe to navigate through cards',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    fontSize: 12.sp,
                   ),
                 ),
               ],
@@ -414,21 +425,21 @@ class _DailyStackScreenState extends State<DailyStackScreen> {
 
   Widget _buildCorrectAnswerDialog(BuildContext context, WordDetail wordDetail, VoidCallback onContinue) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // Success card
           Container(
-            padding: const EdgeInsets.all(24.0),
+            padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
               color: Colors.green[50],
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
             ),
             child: Row(
               children: [
-                Icon(Icons.check_circle, size: 48, color: Colors.green),
-                const SizedBox(width: 16),
+                Icon(Icons.check_circle, size: 48.sp, color: Colors.green),
+                SizedBox(width: 16.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -438,13 +449,15 @@ class _DailyStackScreenState extends State<DailyStackScreen> {
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: Colors.green[900],
+                          fontSize: 20.sp,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h),
                       Text(
-                        'Great job! Here are the details:',
+                        'Great job!',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Colors.green[700],
+                          fontSize: 14.sp,
                         ),
                       ),
                     ],
@@ -456,21 +469,21 @@ class _DailyStackScreenState extends State<DailyStackScreen> {
           // Word details
           Flexible(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: EdgeInsets.all(8.w),
               child: _buildWordDetailsCard(context, wordDetail),
             ),
           ),
           // Continue button
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: onContinue,
-                icon: const Icon(Icons.arrow_forward),
-                label: const Text('Continue Review'),
+                icon: Icon(Icons.arrow_forward, size: 20.sp),
+                label: Text('Continue Review', style: TextStyle(fontSize: 16.sp)),
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
                 ),
               ),
             ),
@@ -489,10 +502,10 @@ class _DailyStackScreenState extends State<DailyStackScreen> {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(8.r),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: EdgeInsets.all(20.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -504,93 +517,101 @@ class _DailyStackScreenState extends State<DailyStackScreen> {
                 children: [
                   if (wordDetail.tone != null) _buildToneIndicator(context, wordDetail.tone!),
                   if (wordDetail.category != null) ...[
-                    if (wordDetail.tone != null) const SizedBox(width: 8),
+                    if (wordDetail.tone != null) SizedBox(width: 8.w),
                     Chip(
-                      label: Text(wordDetail.category!.name),
+                      label: Text(wordDetail.category!.name, style: TextStyle(fontSize: 12.sp)),
                       backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
                       labelStyle: TextStyle(
                         color: Theme.of(context).colorScheme.onSecondaryContainer,
                         fontWeight: FontWeight.w500,
-                        fontSize: 12,
+                        fontSize: 12.sp,
                       ),
                       side: BorderSide(
                         color: Theme.of(context).colorScheme.secondary.withOpacity(0.5),
                         width: 1,
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     ),
                   ],
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             // Word
             Text(
               wordDetail.word,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.bold,
+                fontSize: 24.sp,
               ),
             ),
             if (wordDetail.pronunciation != null) ...[
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               Text(
                 wordDetail.pronunciation!,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.grey[600],
                   fontStyle: FontStyle.italic,
+                  fontSize: 14.sp,
                 ),
               ),
             ],
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             // Definition
             Text(
               'Definition',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
+                fontSize: 16.sp,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               primaryDef.text,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 height: 1.5,
+                fontSize: 14.sp,
               ),
             ),
             // Examples
             if (primaryDef.examples.isNotEmpty) ...[
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               Text(
                 'Examples',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
+                  fontSize: 16.sp,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               ...primaryDef.examples.map((example) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: EdgeInsets.only(bottom: 8.h),
                 child: Text(
                   '• $example',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontStyle: FontStyle.italic,
                     color: Colors.grey[700],
+                    fontSize: 14.sp,
                   ),
                 ),
               )),
             ],
             // Etymology
             if (wordDetail.etymology != null && wordDetail.etymology!.evolution != null) ...[
-              const SizedBox(height: 16),
+              SizedBox(height: 8.h),
               Text(
                 'Origin',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
+                  fontSize: 16.sp,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Text(
                 wordDetail.etymology!.evolution!,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.grey[700],
+                  fontSize: 12.sp,
                 ),
               ),
             ],
@@ -620,22 +641,22 @@ class _DailyStackScreenState extends State<DailyStackScreen> {
     }
     
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 5.h),
       decoration: BoxDecoration(
         color: color.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8.r),
         border: Border.all(color: color.withOpacity(0.5), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 16)),
-          const SizedBox(width: 4),
+          Text(emoji, style: TextStyle(fontSize: 14.sp)),
+          SizedBox(width: 4.w),
           Text(
             tone.toUpperCase(),
             style: TextStyle(
               color: color,
-              fontSize: 11,
+              fontSize: 10.sp,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -736,79 +757,88 @@ class _MCQCardWidgetState extends State<_MCQCardWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: BoxConstraints(
-        maxWidth: MediaQuery.of(context).size.width * 0.80,
-        maxHeight: MediaQuery.of(context).size.height * 0.55,
-      ),
-      child: Card(
-        elevation: 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Progress level indicator (top right)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Container(
+          constraints: BoxConstraints(
+            maxWidth: 0.9.sw,
+            maxHeight: 0.75.sh,
+          ),
+          child: Card(
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(16.w),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildProgressLevelIndicator(_displayLevel),
+                  // Progress level indicator (top right)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      _buildProgressLevelIndicator(_displayLevel),
+                    ],
+                  ),
+                  SizedBox(height: 12.h),
+                  // Question (definition)
+                  Text(
+                    'What word matches this definition?',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  Container(
+                    padding: EdgeInsets.all(10.w),
+                    constraints: BoxConstraints(minHeight: 0.12.sh),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.7),
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Text(
+                      widget.question.definition,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontSize: 16.sp,
+                        height: 1.4,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 14.h),
+                  // Options - use Flexible to distribute space evenly
+                  ...widget.question.options.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final option = entry.value;
+                    final isCorrect = option == widget.question.correctAnswer;
+                    final isSelected = option == _selectedAnswer;
+                    final isLast = index == widget.question.options.length - 1;
+                    
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: isLast ? 0 : 8.h),
+                      child: _MCQOptionButton(
+                        option: option,
+                        isCorrect: isCorrect,
+                        isSelected: isSelected,
+                        isRevealed: _isRevealed,
+                        onTap: () => _handleAnswerTap(option),
+                      ),
+                    );
+                  }),
                 ],
               ),
-              const SizedBox(height: 24),
-              // Question (definition)
-              Text(
-                'What word matches this definition?',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.7),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
-                    width: 1.5,
-                  ),
-                ),
-                child: Text(
-                  widget.question.definition,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontSize: 18,
-                    height: 1.5,
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              // Options
-              ...widget.question.options.map((option) {
-                final isCorrect = option == widget.question.correctAnswer;
-                final isSelected = option == _selectedAnswer;
-                
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _MCQOptionButton(
-                    option: option,
-                    isCorrect: isCorrect,
-                    isSelected: isSelected,
-                    isRevealed: _isRevealed,
-                    onTap: () => _handleAnswerTap(option),
-                  ),
-                );
-              }),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -819,12 +849,12 @@ class _MCQCardWidgetState extends State<_MCQCardWidget> {
         final isActive = index < level;
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
-          width: 4,
-          height: isActive ? 20 : 8,
-          margin: const EdgeInsets.symmetric(horizontal: 2),
+          width: 3.w,
+          height: isActive ? 10.h : 10.h,
+          margin: EdgeInsets.symmetric(horizontal: 2.w),
           decoration: BoxDecoration(
             color: isActive ? Colors.blue : Colors.grey[300],
-            borderRadius: BorderRadius.circular(2),
+            borderRadius: BorderRadius.circular(1.r),
           ),
         );
       }),
@@ -924,20 +954,21 @@ class _MCQOptionButtonState extends State<_MCQOptionButton>
           duration: const Duration(milliseconds: 100),
           child: Material(
             color: backgroundColor,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             child: InkWell(
               onTap: widget.isRevealed ? null : widget.onTap,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               child: Stack(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                    constraints: BoxConstraints(minHeight: 36.h),
                     decoration: BoxDecoration(
                       border: Border.all(
                         color: borderColor!,
                         width: widget.isRevealed && (widget.isCorrect || (widget.isSelected && !widget.isCorrect)) ? 2 : 1.5,
                       ),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Row(
                       children: [
@@ -947,13 +978,14 @@ class _MCQOptionButtonState extends State<_MCQOptionButton>
                             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                               color: textColor,
                               fontWeight: FontWeight.w500,
+                              fontSize: 15.sp,
                             ),
                           ),
                         ),
                         if (widget.isRevealed && widget.isCorrect)
-                          Icon(Icons.check_circle, color: Colors.green[700], size: 24)
+                          Icon(Icons.check_circle, color: Colors.green[700], size: 18.sp)
                         else if (widget.isRevealed && widget.isSelected && !widget.isCorrect)
-                          Icon(Icons.cancel, color: Colors.red[700], size: 24),
+                          Icon(Icons.cancel, color: Colors.red[700], size: 18.sp),
                       ],
                     ),
                   ),
@@ -962,7 +994,7 @@ class _MCQOptionButtonState extends State<_MCQOptionButton>
                      Positioned.fill(
                        child: IgnorePointer(
                          child: ClipRRect(
-                           borderRadius: BorderRadius.circular(12),
+                           borderRadius: BorderRadius.circular(12.r),
                            child: Align(
                              alignment: Alignment.centerLeft,
                              widthFactor: _progressAnimation.value,
@@ -977,7 +1009,7 @@ class _MCQOptionButtonState extends State<_MCQOptionButton>
                                      Colors.red.withOpacity(0.3),
                                    ],
                                  ),
-                                 borderRadius: BorderRadius.circular(12),
+                                 borderRadius: BorderRadius.circular(12.r),
                                ),
                              ),
                            ),

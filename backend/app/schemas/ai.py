@@ -35,6 +35,7 @@ class StoryGenerateRequest(BaseModel):
 
 class StoryResponse(BaseModel):
     story_id: int
+    title: str
     narrative: str
     word_ids: List[int]
     story_type: str

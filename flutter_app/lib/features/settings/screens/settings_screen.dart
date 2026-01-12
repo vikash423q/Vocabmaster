@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../../app/app_router.dart';
 import '../../../app/app.dart';
+import '../../../core/services/notification_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -34,6 +35,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final minute = prefs.getInt('notification_minute') ?? 0;
       _notificationTime = TimeOfDay(hour: hour, minute: minute);
     });
+    
+    // Restore scheduled notifications if enabled
+    if (_notificationsEnabled) {
+      final notificationService = NotificationService();
+      await notificationService.initialize();
+      await notificationService.scheduleReviewReminder(
+        hour: _notificationTime.hour,
+        minute: _notificationTime.minute,
+        enabled: true,
+      );
+    }
   }
 
   Future<void> _saveDarkMode(bool value) async {
@@ -55,7 +67,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _notificationsEnabled = value;
     });
-    // TODO: Schedule/cancel notifications
+    
+    // Schedule or cancel notifications
+    final notificationService = NotificationService();
+    await notificationService.scheduleReviewReminder(
+      hour: _notificationTime.hour,
+      minute: _notificationTime.minute,
+      enabled: value,
+    );
   }
 
   Future<void> _saveStoryNotifications(bool value) async {
@@ -79,7 +98,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() {
         _notificationTime = picked;
       });
-      // TODO: Reschedule notifications
+      
+      // Reschedule notifications with new time if enabled
+      if (_notificationsEnabled) {
+        final notificationService = NotificationService();
+        await notificationService.scheduleReviewReminder(
+          hour: picked.hour,
+          minute: picked.minute,
+          enabled: true,
+        );
+      }
     }
   }
 
