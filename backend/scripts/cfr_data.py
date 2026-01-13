@@ -12,7 +12,7 @@ def extract_next_data(html):
     script = soup.find("script", id="__NEXT_DATA__")
     if not script:
         raise RuntimeError("__NEXT_DATA__ not found")
-    return json.loads(script.string)~
+    return json.loads(script.string)
 
 
 def get_subcategories(category_url):

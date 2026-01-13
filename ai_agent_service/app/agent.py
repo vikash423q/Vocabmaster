@@ -401,3 +401,70 @@ Please provide a helpful, educational response about this word."""
             )
         except Exception as api_error:
             raise Exception(f"LLM API error: {str(api_error)}")
+    
+    def generate_word_context(self, word: str) -> Dict[str, Any]:
+        """Generate contextual content for a word: tweets, references, quotes, events."""
+        prompt = f"""Generate contextual content for the word: {word}
+
+Provide not more than 2 items for each of these categories:
+1. Tweets - Short, engaging tweets (max 280 characters each) that use or reference this word
+2. Popular Movie/TV/Book References - Famous quotes, scenes, or references from movies, TV shows, or books that feature this word
+3. Quotes - Memorable quotes from famous people, literature, or speeches that use this word
+4. Popular Events - Historical or cultural events where this word was prominently used or relevant
+
+Return your response in the following JSON format:
+{{
+    "tweets": ["tweet 1", "tweet 2"],
+    "references": ["reference 1", "reference 2"],
+    "quotes": ["quote 1", "quote 2"],
+    "events": ["event 1", "event 2"]
+}}
+
+Requirements:
+- Each category should have at most 2 items
+- Content should be accurate and relevant to the word
+- Tweets should be engaging and natural
+- References should be from well-known sources
+- Quotes should be memorable and authentic
+- Events should be historically or culturally significant
+- Return only valid JSON, no markdown formatting"""
+
+        try:
+            content = self._make_llm_request(
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=1500,
+                temperature=0.7
+            )
+            
+            # Try to extract JSON from response
+            try:
+                # Remove markdown code blocks if present
+                if "```json" in content:
+                    content = content.split("```json")[1].split("```")[0].strip()
+                elif "```" in content:
+                    content = content.split("```")[1].split("```")[0].strip()
+                
+                context_data = json.loads(content)
+                
+                # Validate and set defaults
+                context_data.setdefault("tweets", [])
+                context_data.setdefault("references", [])
+                context_data.setdefault("quotes", [])
+                context_data.setdefault("events", [])
+                
+                # Ensure each category has at most 2 items
+                for key in ["tweets", "references", "quotes", "events"]:
+                    if key in context_data and isinstance(context_data[key], list):
+                        context_data[key] = context_data[key][:2]
+                
+                return context_data
+            except json.JSONDecodeError:
+                # Fallback: create basic structure
+                return {
+                    "tweets": [],
+                    "references": [],
+                    "quotes": [],
+                    "events": []
+                }
+        except Exception as api_error:
+            raise Exception(f"LLM API error: {str(api_error)}")

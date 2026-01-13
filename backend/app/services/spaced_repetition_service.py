@@ -29,7 +29,16 @@ async def process_review(
             user_word_progress.next_review_date = None
         else:
             user_word_progress.fibonacci_level = new_level
-            days_to_add = FIBONACCI_DAYS[new_level] if new_level < len(FIBONACCI_DAYS) else 180
+            # Calculate days between current and next review day
+            # FIBONACCI_DAYS represents the days at which we review, so we need the difference
+            if new_level < len(FIBONACCI_DAYS):
+                if new_level == 0:
+                    days_to_add = FIBONACCI_DAYS[0]  # First review on day 1 (1 day from today)
+                else:
+                    days_to_add = FIBONACCI_DAYS[new_level] - FIBONACCI_DAYS[new_level - 1]
+            else:
+                # Beyond the sequence, use difference from last value to 180
+                days_to_add = 180 - FIBONACCI_DAYS[-1]  # 180 - 89 = 91 days
             user_word_progress.next_review_date = date.today() + timedelta(days=days_to_add)
             user_word_progress.status = ProgressStatus.REVIEWING
     else:
@@ -39,87 +48,21 @@ async def process_review(
         
         if new_level == 0:
             user_word_progress.status = ProgressStatus.LEARNING
-            days_to_add = FIBONACCI_DAYS[0]  # 1 day
+            days_to_add = FIBONACCI_DAYS[0]  # First review on day 1
         else:
-            days_to_add = FIBONACCI_DAYS[new_level] if new_level < len(FIBONACCI_DAYS) else 180
+            # Calculate days between current and next review day
+            days_to_add = FIBONACCI_DAYS[new_level] - FIBONACCI_DAYS[new_level - 1]
         
         user_word_progress.next_review_date = date.today() + timedelta(days=days_to_add)
     
     user_word_progress.last_reviewed_at = date.today()
     
-    # Update user's current_level based on review
-    await update_user_level_from_review(db, user_word_progress.user_id, user_word_progress.word_id, is_correct)
+    # Note: User's current_level is only updated via assessments, not individual reviews
     
     await db.commit()
     await db.refresh(user_word_progress)
     
     return user_word_progress
-
-
-async def update_user_level_from_review(
-    db: AsyncSession,
-    user_id: int,
-    word_id: int,
-    is_correct: bool
-):
-    """Update user's current_level based on review performance.
-    
-    Formula: Use a weighted average where correct reviews gradually increase level
-    towards the word's difficulty level.
-    """
-    from app.models.user import User
-    from app.models.word import Word
-    from sqlalchemy import func as sql_func
-    from app.models.user_word_progress import UserWordProgress
-    
-    # Get user
-    user_query = select(User).where(User.id == user_id)
-    user_result = await db.execute(user_query)
-    user = user_result.scalar_one_or_none()
-    
-    if not user or user.current_level is None:
-        # Can't update level if user hasn't been assessed yet
-        return
-    
-    # Get word difficulty
-    word_query = select(Word).where(Word.id == word_id)
-    word_result = await db.execute(word_query)
-    word = word_result.scalar_one_or_none()
-    
-    if not word:
-        return
-    
-    word_difficulty = float(word.difficulty_level)
-    current_level = float(user.current_level)
-    
-    # Get total reviews count for this user
-    review_count_query = select(sql_func.count(UserWordProgress.id)).where(
-        UserWordProgress.user_id == user_id
-    )
-    review_count_result = await db.execute(review_count_query)
-    total_reviews = review_count_result.scalar_one_or_none() or 1
-    
-    # Calculate increment/decrement
-    # If correct: gradually increase towards word difficulty
-    # If incorrect: slightly decrease
-    if is_correct:
-        # Weight: (1 / total_reviews) * 0.3 means each review has less impact as user reviews more
-        # This ensures level stabilizes over time
-        weight = min(0.3, 1.0 / max(1, total_reviews))
-        increment = weight * (word_difficulty - current_level)
-        # Cap increment to reasonable value
-        increment = max(-0.5, min(0.5, increment))
-        new_level = current_level + increment
-    else:
-        # On incorrect, slightly decrease (smaller impact)
-        weight = min(0.1, 1.0 / max(1, total_reviews))
-        decrement = weight * 0.5  # Small decrement
-        new_level = current_level - decrement
-    
-    # Clamp between 1.0 and 10.0
-    new_level = max(1.0, min(10.0, new_level))
-    
-    user.current_level = new_level
 
 
 async def add_word_to_learning(

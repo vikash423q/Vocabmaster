@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth_bloc.dart';
 import '../../../../app/app_router.dart';
+import '../../../../app/widgets/app_logo.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -31,7 +32,14 @@ class _LoginScreenState extends State<LoginScreen> {
           if (state is AuthAuthenticated) {
             // Check if user needs assessment
             if (state.user.currentLevel == null) {
-              Navigator.pushReplacementNamed(context, AppRouter.assessment);
+              // Show "How it works" for first-time users
+              Navigator.pushReplacementNamed(
+                context,
+                AppRouter.howItWorks,
+                arguments: {
+                  'showSkipButton': true,
+                },
+              );
             } else {
               Navigator.pushReplacementNamed(context, AppRouter.main);
             }
@@ -80,11 +88,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // Logo/Icon
-                          Icon(
-                            Icons.library_books,
-                            size: 80,
-                            color: Theme.of(context).colorScheme.primary,
+                          // Logo
+                          AppLogo(
+                            size: 100,
                           ),
                           const SizedBox(height: 24),
                           

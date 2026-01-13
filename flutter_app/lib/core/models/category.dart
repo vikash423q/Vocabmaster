@@ -12,6 +12,7 @@ class Category with _$Category {
     String? description,
     @JsonKey(name: 'parent_category_id') int? parentCategoryId,
     @JsonKey(name: 'importance_weight') @Default(5.0) double importanceWeight,
+    @JsonKey(name: 'word_count') @Default(0) int wordCount,
   }) = _Category;
 
   factory Category.fromJson(Map<String, dynamic> json) =>

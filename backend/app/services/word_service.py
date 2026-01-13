@@ -152,6 +152,57 @@ async def get_categories(db: AsyncSession) -> List[Category]:
     return list(result.scalars().all())
 
 
+async def get_parent_categories(db: AsyncSession) -> List[Category]:
+    """Get all parent categories (categories with no parent)."""
+    result = await db.execute(
+        select(Category)
+        .where(Category.parent_category_id.is_(None))
+        .order_by(Category.name)
+    )
+    return list(result.scalars().all())
+
+
+async def get_subcategories(db: AsyncSession, parent_category_id: int) -> List[Category]:
+    """Get all subcategories for a given parent category."""
+    result = await db.execute(
+        select(Category)
+        .where(Category.parent_category_id == parent_category_id)
+        .order_by(Category.name)
+    )
+    return list(result.scalars().all())
+
+
+async def count_words_in_category(db: AsyncSession, category_id: int) -> int:
+    """Count words in a specific category."""
+    from sqlalchemy import func
+    result = await db.execute(
+        select(func.count(Word.id))
+        .where(Word.category_id == category_id)
+    )
+    return result.scalar() or 0
+
+
+async def count_words_in_category_with_subcategories(db: AsyncSession, category_id: int) -> int:
+    """Count words in a category including all its subcategories."""
+    from sqlalchemy import func
+    
+    # Get all subcategory IDs for this parent category
+    subcategories_query = select(Category.id).where(Category.parent_category_id == category_id)
+    subcategories_result = await db.execute(subcategories_query)
+    subcategory_ids = [row[0] for row in subcategories_result.all()]
+    
+    # Count words in parent category OR any of its subcategories
+    category_conditions = [Word.category_id == category_id]
+    if subcategory_ids:
+        category_conditions.append(Word.category_id.in_(subcategory_ids))
+    
+    result = await db.execute(
+        select(func.count(Word.id))
+        .where(or_(*category_conditions))
+    )
+    return result.scalar() or 0
+
+
 async def create_word(
     db: AsyncSession,
     word: str,

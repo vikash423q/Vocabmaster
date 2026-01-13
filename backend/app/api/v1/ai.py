@@ -10,7 +10,9 @@ from app.schemas.ai import (
     StoryGenerateRequest,
     StoryResponse,
     ChatRequest,
-    ChatResponse
+    ChatResponse,
+    WordContextRequest,
+    WordContextResponse
 )
 from app.services.word_service import get_word_by_id
 from app.api.dependencies import get_current_user
@@ -208,3 +210,25 @@ async def chat(
     
     result = await call_ai_service("/chat", payload)
     return ChatResponse(**result)
+
+
+@router.post("/generate-word-context", response_model=WordContextResponse)
+async def generate_word_context(
+    request: WordContextRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Generate contextual content for a word (tweets, references, quotes, events)."""
+    word = await get_word_by_id(db, request.word_id)
+    if not word:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Word not found"
+        )
+    
+    payload = {
+        "word": word.word
+    }
+    
+    result = await call_ai_service("/generate-word-context", payload)
+    return WordContextResponse(**result)

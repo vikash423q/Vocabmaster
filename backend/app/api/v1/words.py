@@ -11,6 +11,10 @@ from app.services.word_service import (
     get_words_by_ids,
     get_word_for_review_page,
     get_categories,
+    get_parent_categories,
+    get_subcategories,
+    count_words_in_category,
+    count_words_in_category_with_subcategories,
     create_word,
     create_word_with_ai,
     delete_word
@@ -301,3 +305,51 @@ async def list_categories(
     """List all categories with hierarchy."""
     categories = await get_categories(db)
     return categories
+
+
+@router.get("/categories/parents", response_model=List[CategorySchema])
+async def get_parent_categories_endpoint(
+    db: AsyncSession = Depends(get_db)
+):
+    """Get all parent categories (categories with no parent) with word counts.
+    
+    Word counts include words in the parent category and all its subcategories.
+    """
+    categories = await get_parent_categories(db)
+    result = []
+    for category in categories:
+        word_count = await count_words_in_category_with_subcategories(db, category.id)
+        result.append({
+            "id": category.id,
+            "name": category.name,
+            "description": category.description,
+            "parent_category_id": category.parent_category_id,
+            "importance_weight": float(category.importance_weight),
+            "word_count": word_count
+        })
+    return result
+
+
+@router.get("/categories/subcategories/{parent_id}", response_model=List[CategorySchema])
+async def get_subcategories_endpoint(
+    parent_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get all subcategories for a given parent category with word counts.
+    
+    If no subcategories exist for the parent, returns an empty list.
+    Word counts include only words directly in each subcategory.
+    """
+    categories = await get_subcategories(db, parent_id)
+    result = []
+    for category in categories:
+        word_count = await count_words_in_category(db, category.id)
+        result.append({
+            "id": category.id,
+            "name": category.name,
+            "description": category.description,
+            "parent_category_id": category.parent_category_id,
+            "importance_weight": float(category.importance_weight),
+            "word_count": word_count
+        })
+    return result

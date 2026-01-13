@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../bloc/assessment_bloc.dart';
 import '../../../core/models/models.dart';
 import '../../../core/di/injection.dart';
@@ -33,7 +34,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
           _isFirstTime = stats.learningWords == 0 && stats.masteredWords == 0 && stats.reviewingWords == 0;
           _checkingFirstTime = false;
         });
-      }
+  }
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -109,174 +110,228 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
             final currentWord = words[currentIndex];
             final completed = state.responses.length;
             final total = words.length;
+            final progress = completed / total;
 
-            // Count "know" responses as correct
-            final correctCount = state.responses.values
-                .where((r) => r == 'know')
-                .length;
-
-            return SafeArea(
-              child: Column(
-                children: [
-                  // Description and progress bar
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        Text(
-                          'Assessment',
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _isFirstTime
-                              ? 'This assessment helps us understand your vocabulary knowledge base to provide better word recommendations tailored to your level.'
-                              : 'This assessment will help align your progress and ensure you\'re learning words at the right difficulty level.',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                              ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 24),
-                        LinearProgressIndicator(
-                          value: completed / total,
-                          backgroundColor: Colors.grey[300],
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Theme.of(context).colorScheme.primary,
+            return Scaffold(
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              body: SafeArea(
+                child: Column(
+                  children: [
+                    // Modern header with progress
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '$completed of $total words',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Card area with hints in a tight column
-                  Expanded(
-                    child: Center(
+                        ],
+                      ),
                       child: Column(
-                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Question text immediately above card
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 8.0),
-                            child: Text(
-                              'Do you know the word?',
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.onSurface,
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.quiz_outlined,
+                                color: Theme.of(context).colorScheme.primary,
+                                size: 24.sp,
                               ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 8.0),
-                            child: Text(
-                              'Swipe to answer or click on can\'t say.',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          // Card
-                          _SwipeableCard(
-                            word: currentWord,
-                            onSwipeLeft: () {
-                              context.read<AssessmentBloc>().add(
-                                    SubmitAssessmentResponse(
-                                      wordId: currentWord.id,
-                                      response: 'don\'t_know',
-                                    ),
-                                  );
-                            },
-                            onSwipeRight: () {
-                              context.read<AssessmentBloc>().add(
-                                    SubmitAssessmentResponse(
-                                      wordId: currentWord.id,
-                                      response: 'know',
-                                    ),
-                                  );
-                            },
-                            onMaybe: () {
-                              context.read<AssessmentBloc>().add(
-                                    SubmitAssessmentResponse(
-                                      wordId: currentWord.id,
-                                      response: 'maybe',
-                                    ),
-                                  );
-                            },
-                          ),
-                          // Instructions immediately below card
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Column(
-                              children: [
-                                
-                                const SizedBox(height: 24),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    _InstructionChip(
-                                      icon: Icons.arrow_back,
-                                      label: "Don't know",
-                                      color: Colors.red,
+                                    Text(
+                                      'Vocabulary Assessment',
+                                      style: TextStyle(
+                                        fontSize: 18.sp,
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context).colorScheme.onSurface,
+                                      ),
                                     ),
-                                    _InstructionChip(
-                                      icon: Icons.help_outline,
-                                      label: "Can't say",
-                                      color: Colors.orange,
-                                    ),
-                                    _InstructionChip(
-                                      icon: Icons.arrow_forward,
-                                      label: "I know",
-                                      color: Colors.green,
+                                    SizedBox(height: 4.h),
+                                    Text(
+                                      _isFirstTime
+                                          ? 'Help us understand your vocabulary level'
+                                          : 'Align your progress and difficulty level',
+                                      style: TextStyle(
+                                        fontSize: 12.sp,
+                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                      ),
                                     ),
                                   ],
                                 ),
-                              ],
+                              ),
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.primaryContainer,
+                                  borderRadius: BorderRadius.circular(20.r),
+                                ),
+                                child: Text(
+                                  '$completed/$total',
+                                  style: TextStyle(
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 16.h),
+                          // Modern progress bar
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8.r),
+                            child: LinearProgressIndicator(
+                              value: progress,
+                              minHeight: 8.h,
+                              backgroundColor: Theme.of(context).colorScheme.surface,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Theme.of(context).colorScheme.primary,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ),
-                  // Auto-submit when all words are answered
-                  if (completed == total)
-                    BlocBuilder<AssessmentBloc, AssessmentState>(
-                      builder: (context, state) {
-                        if (state is AssessmentSubmitting) {
-                          return Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              children: [
-                                const CircularProgressIndicator(),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Processing your assessment...',
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                    // Card area
+                    Expanded(
+                      child: Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Question prompt
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                                borderRadius: BorderRadius.circular(16.r),
+                                border: Border.all(
+                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                                  width: 1,
                                 ),
-                              ],
+                              ),
+                              child: Text(
+                                'Do you know this word?',
+                                style: TextStyle(
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
-                          );
-                        }
-                        // Auto-submit when all words answered
-                        if (state is AssessmentStackLoaded && completed == total) {
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            context.read<AssessmentBloc>().add(SubmitAssessment());
-                          });
-                        }
-                        return const SizedBox.shrink();
-                      },
+                            SizedBox(height: 32.h),
+                            // Swipeable card
+                            Expanded(
+                              child: _SwipeableCard(
+                                word: currentWord,
+                                onSwipeLeft: () {
+                                  context.read<AssessmentBloc>().add(
+                                        SubmitAssessmentResponse(
+                                          wordId: currentWord.id,
+                                          response: 'don\'t_know',
+                                        ),
+                                      );
+                                },
+                                onSwipeRight: () {
+                                  context.read<AssessmentBloc>().add(
+                                        SubmitAssessmentResponse(
+                                          wordId: currentWord.id,
+                                          response: 'know',
+                                        ),
+                                      );
+                                },
+                                onMaybe: () {
+                                  context.read<AssessmentBloc>().add(
+                                        SubmitAssessmentResponse(
+                                          wordId: currentWord.id,
+                                          response: 'maybe',
+                                        ),
+                                      );
+                                },
+                              ),
+                            ),
+                            SizedBox(height: 12.h),
+                            // Swipe instruction text - right below card
+                            Text(
+                              'Swipe left or right, or tap "Can\'t say"',
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                              ),
+                            ),
+                            SizedBox(height: 16.h),
+                            // Instruction chips - closer to card
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8.w),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: _InstructionChip(
+                                      icon: Icons.arrow_back_rounded,
+                                      label: "Don't know",
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8.w),
+                                  Expanded(
+                                    child: _InstructionChip(
+                                      icon: Icons.arrow_forward_rounded,
+                                      label: "I know",
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                ],
+                    // Auto-submit when all words are answered
+                    if (completed == total)
+                      BlocBuilder<AssessmentBloc, AssessmentState>(
+                        builder: (context, state) {
+                          if (state is AssessmentSubmitting) {
+                            return Container(
+                              padding: EdgeInsets.all(24.w),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircularProgressIndicator(
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                  SizedBox(height: 16.h),
+                                  Text(
+                                    'Processing your assessment...',
+                                    style: TextStyle(
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: Theme.of(context).colorScheme.onSurface,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                          // Auto-submit when all words answered
+                          if (state is AssessmentStackLoaded && completed == total) {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              context.read<AssessmentBloc>().add(SubmitAssessment());
+                            });
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                  ],
+                ),
               ),
             );
           }
@@ -367,7 +422,9 @@ class _SwipeableCardState extends State<_SwipeableCard>
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final opacity = 1.0 - (_dragPosition.abs() / screenWidth).clamp(0.0, 0.5);
+    final dragRatio = (_dragPosition / screenWidth).clamp(-1.0, 1.0);
+    final opacity = 1.0 - (dragRatio.abs() * 0.5).clamp(0.0, 0.5);
+    final rotation = dragRatio * 0.1;
 
     return GestureDetector(
       onHorizontalDragUpdate: _handleDragUpdate,
@@ -375,75 +432,175 @@ class _SwipeableCardState extends State<_SwipeableCard>
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Background indicators
+          // Background indicators with better styling
           if (_dragPosition > 50)
             Positioned(
-              right: 20,
-              child: Icon(
-                Icons.check_circle,
-                color: Colors.green.withOpacity(opacity),
-                size: 60,
-              ),
-            ),
-          if (_dragPosition < -50)
-            Positioned(
-              left: 20,
-              child: Icon(
-                Icons.cancel,
-                color: Colors.red.withOpacity(opacity),
-                size: 60,
-              ),
-            ),
-          // Card
-          Transform.translate(
-            offset: Offset(_dragPosition, 0),
-            child: Opacity(
-              opacity: opacity,
-              child: Card(
-                elevation: 8,
-                margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              right: 40.w,
+              child: AnimatedOpacity(
+                opacity: (_dragPosition / 200).clamp(0.0, 1.0),
+                duration: const Duration(milliseconds: 100),
                 child: Container(
-                  constraints: const BoxConstraints(minWidth: 300, minHeight: 400, maxWidth: 400, maxHeight: 500),
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        widget.word.word,
-                        style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                        textAlign: TextAlign.center,
-                      ),
-                      if (widget.word.pronunciation != null) ...[
-                        const SizedBox(height: 16),
-                        Text(
-                          widget.word.pronunciation!,
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                color: Colors.grey[600],
-                              ),
-                        ),
-                      ],
-                      const SizedBox(height: 42),
-                      // Can't say button
-                      OutlinedButton.icon(
-                        onPressed: widget.onMaybe,
-                        icon: const Icon(Icons.help_outline),
-                        label: const Text('Can\'t say'),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                        ),
-                      ),
-                    ],
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.green.withOpacity(0.5),
+                      width: 3,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.check_circle_rounded,
+                    color: Colors.green,
+                    size: 48.sp,
                   ),
                 ),
               ),
             ),
-          ),
+          if (_dragPosition < -50)
+            Positioned(
+              left: 40.w,
+              child: AnimatedOpacity(
+                opacity: (_dragPosition.abs() / 200).clamp(0.0, 1.0),
+                duration: const Duration(milliseconds: 100),
+                child: Container(
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.red.withOpacity(0.5),
+                      width: 3,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.cancel_rounded,
+                    color: Colors.red,
+                    size: 48.sp,
+                  ),
+                ),
+              ),
+            ),
+          // Modern card design
+          Transform.translate(
+            offset: Offset(_dragPosition, 0),
+            child: Transform.rotate(
+              angle: rotation,
+              child: Opacity(
+                opacity: opacity,
+                child: Container(
+                  constraints: BoxConstraints(
+                    maxWidth: 0.9.sw,
+                    maxHeight: 0.6.sh,
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24.r),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Theme.of(context).colorScheme.surface,
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
+                        ],
+                      ),
+                      boxShadow: [
+                        // Multiple shadow layers for depth and elevation
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.15),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                          spreadRadius: 2,
+                        ),
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 40,
+                          offset: const Offset(0, 16),
+                          spreadRadius: -4,
+                        ),
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 60,
+                          offset: const Offset(0, 24),
+                          spreadRadius: -8,
+                        ),
+                      ],
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+                        width: 1,
+                      ),
+                    ),
+                    padding: EdgeInsets.all(32.w),
+                    child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Word
+                          Text(
+                            widget.word.word,
+                            style: TextStyle(
+                              fontSize: 48.sp * 0.8,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.onSurface,
+                              letterSpacing: 1.2,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          // Pronunciation
+                          if (widget.word.pronunciation != null) ...[
+                            SizedBox(height: 16.h),
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              child: Text(
+                                widget.word.pronunciation!,
+                                style: TextStyle(
+                                  fontSize: 20.sp * 0.8,
+                                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ),
+                          ],
+                          SizedBox(height: 48.h),
+                          // Can't say button - modern design
+                          OutlinedButton.icon(
+                            onPressed: widget.onMaybe,
+                            icon: Icon(
+                              Icons.help_outline_rounded,
+                              size: 20.sp * 0.8,
+                            ),
+                            label: Text(
+                              'Can\'t say',
+                              style: TextStyle(
+                                fontSize: 16.sp * 0.8,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 32.w,
+                                vertical: 16.h,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                              ),
+                              side: BorderSide(
+                                color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -463,16 +620,39 @@ class _InstructionChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: color, size: 20),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: TextStyle(color: color, fontWeight: FontWeight.w500),
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: color.withOpacity(0.3),
+          width: 1.5,
         ),
-      ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 16.sp),
+          SizedBox(width: 4.w),
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 11.sp,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

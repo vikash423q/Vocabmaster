@@ -31,11 +31,9 @@ class _CategoryExplorationScreenState extends State<CategoryExplorationScreen> {
     });
 
     try {
-      final categories = await _apiService.getCategories();
-      // Filter to only parent categories (parentCategoryId is null)
-      final parentCategories = categories.where((c) => c.parentCategoryId == null).toList();
+      final categories = await _apiService.getParentCategories();
       setState(() {
-        _categories = parentCategories;
+        _categories = categories;
         _loading = false;
       });
     } catch (e) {

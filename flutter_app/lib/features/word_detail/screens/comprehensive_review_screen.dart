@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -5,13 +6,19 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../bloc/word_detail_bloc.dart';
 import '../../../core/models/word.dart';
 import '../../../core/models/progress.dart';
+import '../../../core/models/quiz.dart';
 import '../../../core/di/injection.dart';
 import '../../../core/network/api_service.dart';
 
 class ComprehensiveReviewScreen extends StatefulWidget {
   final int wordId;
+  final bool fromReview;
 
-  const ComprehensiveReviewScreen({super.key, required this.wordId});
+  const ComprehensiveReviewScreen({
+    super.key,
+    required this.wordId,
+    this.fromReview = false,
+  });
 
   @override
   State<ComprehensiveReviewScreen> createState() => _ComprehensiveReviewScreenState();
@@ -21,6 +28,7 @@ class _ComprehensiveReviewScreenState extends State<ComprehensiveReviewScreen> {
   final ApiService _apiService = getIt<ApiService>();
   WordProgressDetail? _wordProgress;
   bool _loadingProgress = true;
+  final GlobalKey<_AIContextSectionState> _aiContextKey = GlobalKey<_AIContextSectionState>();
 
   @override
   void initState() {
@@ -36,13 +44,21 @@ class _ComprehensiveReviewScreenState extends State<ComprehensiveReviewScreen> {
           _wordProgress = progress;
           _loadingProgress = false;
         });
+        // If from review and first time (level 0), trigger AI content load
+        if (widget.fromReview && progress.fibonacciLevel == 0) {
+          _aiContextKey.currentState?.autoLoadIfFirstTime();
+        }
       }
     } catch (e) {
-      // Word might not be in progress yet, that's okay
+      // Word might not be in progress yet, that's okay - treat as first time
       if (mounted) {
         setState(() {
           _loadingProgress = false;
         });
+        // If from review and no progress (first time), trigger AI content load
+        if (widget.fromReview) {
+          _aiContextKey.currentState?.autoLoadIfFirstTime();
+        }
       }
     }
   }
@@ -58,8 +74,25 @@ class _ComprehensiveReviewScreenState extends State<ComprehensiveReviewScreen> {
               return const Center(child: CircularProgressIndicator());
             } else if (state is WordDetailLoaded) {
               final data = state.data;
-              return CustomScrollView(
-                slivers: [
+
+              return NotificationListener<ScrollNotification>(
+                onNotification: (notification) {
+                  if (notification is ScrollUpdateNotification) {
+                    final metrics = notification.metrics;
+                    final scrollDelta = notification.scrollDelta;
+                    if (scrollDelta != null && scrollDelta < 0) {
+                      // Scrolling up
+                      final isAtBottom = metrics.pixels >= metrics.maxScrollExtent - 50;
+                      if (isAtBottom) {
+                        // Pass drag info to AI context section
+                        _aiContextKey.currentState?.handleScrollUp(scrollDelta.abs());
+                      }
+                    }
+                  }
+                  return false;
+                },
+                child: CustomScrollView(
+                  slivers: [
                   SliverAppBar(
                     expandedHeight: 210,
                     pinned: true,
@@ -149,7 +182,23 @@ class _ComprehensiveReviewScreenState extends State<ComprehensiveReviewScreen> {
                     SliverToBoxAdapter(
                       child: _MediaGallery(media: data.media),
                     ),
+                  // AI Context Section (Pull-up), pinned to bottom if there's extra space
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Column(
+                      children: [
+                        const Spacer(),
+                        _AIContextSection(
+                          key: _aiContextKey,
+                          wordId: widget.wordId,
+                          word: data.word,
+                          fromReview: widget.fromReview,
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
+                ),
               );
             } else if (state is WordDetailError) {
               return Center(child: Text('Error: ${state.message}'));
@@ -880,4 +929,453 @@ Widget _buildProgressLevelIndicator(int level) {
       );
     }),
   );
+}
+
+class _AIContextSection extends StatefulWidget {
+  final int wordId;
+  final String word;
+  final bool fromReview;
+
+  const _AIContextSection({
+    Key? key,
+    required this.wordId,
+    required this.word,
+    this.fromReview = false,
+  }) : super(key: key);
+
+  @override
+  State<_AIContextSection> createState() => _AIContextSectionState();
+}
+
+class _AIContextSectionState extends State<_AIContextSection> {
+  final ApiService _apiService = getIt<ApiService>();
+  WordContextResponse? _contextData;
+  bool _isLoading = false;
+  bool _isExpanded = false;
+  bool _hasLoaded = false;
+  double _dragOffset = 0.0;
+  static const double _dragThreshold = 40.0;
+  Timer? _resetTimer;
+  
+  @override
+  void dispose() {
+    _resetTimer?.cancel();
+    super.dispose();
+  }
+  
+  // Auto-load if from review and first time (called after progress is loaded)
+  void autoLoadIfFirstTime() {
+    if (widget.fromReview && !_hasLoaded && !_isLoading && !_isExpanded) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _loadContext();
+        }
+      });
+    }
+  }
+  
+  // Handle scroll up from the content area (definitions/examples)
+  void handleScrollUp(double delta) {
+    if (!_isExpanded && !_isLoading) {
+      // Cancel any pending reset
+      _resetTimer?.cancel();
+      
+      setState(() {
+        _dragOffset = (_dragOffset + delta * 2).clamp(0.0, _dragThreshold);
+      });
+      
+      // If threshold reached, expand and load
+      if (_dragOffset >= _dragThreshold * 0.7) {
+        if (!_hasLoaded) {
+          _loadContext();
+        } else {
+          setState(() {
+            _isExpanded = true;
+            _dragOffset = 0.0;
+          });
+        }
+      } else {
+        // Reset drag offset after a delay if not at threshold
+        _resetTimer = Timer(const Duration(milliseconds: 300), () {
+          if (mounted && !_isExpanded) {
+            setState(() {
+              _dragOffset = 0.0;
+            });
+          }
+        });
+      }
+    }
+  }
+  
+  // Method to auto-expand when scrolling up (legacy)
+  void autoExpand() {
+    if (!_hasLoaded && !_isLoading && !_isExpanded) {
+      _loadContext();
+    }
+  }
+
+  Future<void> _loadContext() async {
+    if (_hasLoaded || _isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+      _isExpanded = true;
+    });
+
+    try {
+      final response = await _apiService.generateWordContext(
+        WordContextRequest(wordId: widget.wordId),
+      );
+      if (mounted) {
+        setState(() {
+          _contextData = response;
+          _isLoading = false;
+          _hasLoaded = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load context: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final baseColor = theme.colorScheme.surfaceContainer;
+    final highlightColor = theme.colorScheme.surfaceContainerHighest;
+    final progress = (_dragOffset / _dragThreshold).clamp(0.0, 1.0);
+    final headerColor = Color.lerp(baseColor, highlightColor, progress) ?? baseColor;
+    final translateY = -4.h * progress;
+
+    return Container(
+      margin: EdgeInsets.only(top: 16.h),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24.r),
+          topRight: Radius.circular(24.r),
+        ),
+      ),
+      child: Column(
+        children: [
+          // Pull-up handle with drag feedback
+          GestureDetector(
+            onTap: () {
+              if (!_hasLoaded && !_isLoading) {
+                _loadContext();
+              } else {
+                setState(() {
+                  _isExpanded = !_isExpanded;
+                });
+              }
+            },
+            onVerticalDragUpdate: (details) {
+              if (details.delta.dy < 0) {
+                // Dragging up
+                setState(() {
+                  _dragOffset = (_dragOffset - details.delta.dy)
+                      .clamp(0.0, _dragThreshold);
+                });
+              } else {
+                // Dragging down - reset if not at threshold
+                if (_dragOffset < _dragThreshold * 0.7) {
+                  setState(() {
+                    _dragOffset = (_dragOffset - details.delta.dy)
+                        .clamp(0.0, _dragThreshold);
+                  });
+                }
+              }
+            },
+            onVerticalDragEnd: (_) {
+              if (_dragOffset >= _dragThreshold * 0.7) {
+                // Threshold reached: expand and load if needed
+                if (!_hasLoaded && !_isLoading) {
+                  _loadContext();
+                } else if (!_isExpanded) {
+                  setState(() {
+                    _isExpanded = true;
+                  });
+                }
+              }
+              // Reset drag state with animation
+              Future.delayed(const Duration(milliseconds: 100), () {
+                if (mounted) {
+                  setState(() {
+                    _dragOffset = 0.0;
+                  });
+                }
+              });
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 120),
+              transform: Matrix4.translationValues(0, translateY, 0),
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    _isExpanded
+                        ? Icons.keyboard_arrow_down
+                        : Icons.keyboard_arrow_up,
+                    color: theme.colorScheme.onSurface.withOpacity(
+                      0.7 + 0.3 * progress,
+                    ),
+                    size: 24.sp,
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    _isLoading
+                        ? 'Loading AI content...'
+                        : _hasLoaded
+                            ? (_isExpanded ? 'Hide AI Content' : 'Show AI Content')
+                            : 'Pull up for more AI content',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.onSurface.withOpacity(
+                            0.7 + 0.3 * progress,
+                          ),
+                        ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Content area
+          AnimatedCrossFade(
+            firstChild: const SizedBox.shrink(),
+            secondChild: _isLoading
+                ? Padding(
+                    padding: EdgeInsets.all(24.w),
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                : _contextData != null
+                    ? _buildContextContent(_contextData!)
+                    : const SizedBox.shrink(),
+            crossFadeState: _isExpanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 300),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContextContent(WordContextResponse data) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 24.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (data.tweets.isNotEmpty) ...[
+            _buildSection(
+              title: 'Tweets',
+              icon: Icons.chat_bubble_outline,
+              items: data.tweets,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            SizedBox(height: 16.h),
+          ],
+          if (data.references.isNotEmpty) ...[
+            _buildSection(
+              title: 'Movie/TV/Book References',
+              icon: Icons.movie_outlined,
+              items: data.references,
+              color: Theme.of(context).colorScheme.secondary,
+            ),
+            SizedBox(height: 16.h),
+          ],
+          if (data.quotes.isNotEmpty) ...[
+            _buildSection(
+              title: 'Quotes',
+              icon: Icons.format_quote,
+              items: data.quotes,
+              color: Theme.of(context).colorScheme.tertiary,
+            ),
+            SizedBox(height: 16.h),
+          ],
+          if (data.events.isNotEmpty) ...[
+            _buildSection(
+              title: 'Popular Events',
+              icon: Icons.event,
+              items: data.events,
+              color: Theme.of(context).colorScheme.tertiary,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSection({
+    required String title,
+    required IconData icon,
+    required List<String> items,
+    required Color color,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, color: color, size: 20.sp),
+            SizedBox(width: 8.w),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+            ),
+          ],
+        ),
+        SizedBox(height: 12.h),
+        ...items.map((item) => Padding(
+              padding: EdgeInsets.only(bottom: 12.h),
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(
+                    color: color.withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: _buildHighlightedText(
+                  text: item,
+                  wordToHighlight: widget.word,
+                  baseStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        height: 1.5,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ) ?? const TextStyle(height: 1.5),
+                ),
+              ),
+            )),
+      ],
+    );
+  }
+
+  Widget _buildHighlightedText({
+    required String text,
+    required String wordToHighlight,
+    required TextStyle baseStyle,
+  }) {
+    final wordHighlightColor = Theme.of(context).colorScheme.primary;
+    final asteriskHighlightColor = Theme.of(context).colorScheme.secondary;
+    
+    // Parse text to find word and asterisked content
+    final spans = <TextSpan>[];
+    final wordLower = wordToHighlight.toLowerCase();
+    final textLower = text.toLowerCase();
+    
+    int currentIndex = 0;
+    final regex = RegExp(r'\*([^*]+)\*'); // Match *text*
+    
+    // Find all asterisked content
+    final asteriskMatches = regex.allMatches(text);
+    final allMatches = <_MatchInfo>[];
+    
+    // Add asterisk matches
+    for (final match in asteriskMatches) {
+      allMatches.add(_MatchInfo(
+        start: match.start,
+        end: match.end,
+        text: match.group(1) ?? '',
+        isAsterisk: true,
+      ));
+    }
+    
+    // Find word matches (case-insensitive, whole word only)
+    final wordRegex = RegExp(r'\b' + RegExp.escape(wordLower) + r'\b', caseSensitive: false);
+    final wordMatches = wordRegex.allMatches(text);
+    
+    for (final match in wordMatches) {
+      // Check if this word match overlaps with any asterisk match
+      bool overlaps = false;
+      for (final asteriskMatch in allMatches) {
+        if (match.start >= asteriskMatch.start && match.start < asteriskMatch.end) {
+          overlaps = true;
+          break;
+        }
+      }
+      if (!overlaps) {
+        allMatches.add(_MatchInfo(
+          start: match.start,
+          end: match.end,
+          text: text.substring(match.start, match.end),
+          isAsterisk: false,
+        ));
+      }
+    }
+    
+    // Sort matches by start position
+    allMatches.sort((a, b) => a.start.compareTo(b.start));
+    
+    // Build text spans
+    for (final match in allMatches) {
+      // Add text before match
+      if (match.start > currentIndex) {
+        spans.add(TextSpan(
+          text: text.substring(currentIndex, match.start),
+          style: baseStyle,
+        ));
+      }
+      
+      // Add highlighted match
+      spans.add(TextSpan(
+        text: match.text,
+        style: baseStyle.copyWith(
+          color: match.isAsterisk ? asteriskHighlightColor : wordHighlightColor,
+          fontWeight: FontWeight.bold,
+        ),
+      ));
+      
+      currentIndex = match.end;
+    }
+    
+    // Add remaining text
+    if (currentIndex < text.length) {
+      spans.add(TextSpan(
+        text: text.substring(currentIndex),
+        style: baseStyle,
+      ));
+    }
+    
+    // If no matches, return plain text
+    if (spans.isEmpty) {
+      return Text(text, style: baseStyle);
+    }
+    
+    return RichText(
+      text: TextSpan(children: spans),
+    );
+  }
+}
+
+class _MatchInfo {
+  final int start;
+  final int end;
+  final String text;
+  final bool isAsterisk;
+  
+  _MatchInfo({
+    required this.start,
+    required this.end,
+    required this.text,
+    required this.isAsterisk,
+  });
 }

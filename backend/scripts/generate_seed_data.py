@@ -514,26 +514,26 @@ def main():
     print("📖 Processing GRE words...")
     print(f"{'=' * 60}")
     for word in gre_words:
-        populate_media(word, minio_client)
-        # word_data = process_word(word, "GRE", ai_service_url, minio_client, progress)
-        # if word_data:
-        #     all_word_data.append(word_data)
-        #     # Save incrementally
-        #     with open(OUTPUT_FILE, 'w') as f:
-        #         json.dump(all_word_data, f, indent=2)
+        # populate_media(word, minio_client)
+        word_data = process_word(word, "GRE", ai_service_url, minio_client, progress)
+        if word_data:
+            all_word_data.append(word_data)
+            # Save incrementally
+            with open(OUTPUT_FILE, 'w') as f:
+                json.dump(all_word_data, f, indent=2)
     
     # Process WPME words
     print(f"\n{'=' * 60}")
     print("📖 Processing WPME words...")
     print(f"{'=' * 60}")
     for word in wpme_words:
-        populate_media(word, minio_client)
-        # word_data = process_word(word, "WordPower", ai_service_url, minio_client, progress)
-        # if word_data:
-        #     all_word_data.append(word_data)
-        #     # Save incrementally
-        #     with open(OUTPUT_FILE, 'w') as f:
-        #         json.dump(all_word_data, f, indent=2)
+        # populate_media(word, minio_client)
+        word_data = process_word(word, "WordPower", ai_service_url, minio_client, progress)
+        if word_data:
+            all_word_data.append(word_data)
+            # Save incrementally
+            with open(OUTPUT_FILE, 'w') as f:
+                json.dump(all_word_data, f, indent=2)
     
     # Final save
     # print(f"\n💾 Saving final data...")

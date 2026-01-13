@@ -41,6 +41,7 @@ class Word(Base):
     user_progress = relationship("UserWordProgress", back_populates="word", cascade="all, delete-orphan")
     daily_stacks = relationship("DailyWordStack", back_populates="word", cascade="all, delete-orphan")
     quiz_sessions = relationship("QuizSession", back_populates="word", cascade="all, delete-orphan")
+    synonyms = relationship("WordSynonym", back_populates="word", cascade="all, delete-orphan")
 
     # Indexes
     __table_args__ = (

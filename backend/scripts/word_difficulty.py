@@ -67,7 +67,8 @@ def test_words():
         ("moment", "A1"),
         ("table", "A1"),
         ("dog", "A1"),
-        ("bank", "A2")
+        ("bank", "A2"),
+        ('abuse', 'C1')
     ]
 
     for word, cefr in words:
@@ -75,35 +76,5 @@ def test_words():
         print(f"{word} ({cefr}): {score} ({difficulty_label(score)})")
 
 if __name__ == "__main__":
-    import math
-    from update_seed_data_with_cefr import load_cefr_csv, CEFR_CSV_FILE
-    cefr_map = load_cefr_csv(CEFR_CSV_FILE)
-
-    b2_scores = []
-    b1_scores = []
-    b2_synsets = []
-    b1_synsets = []
-    c1_scores = []
-    c2_scores = []
-    c1_synsets = []
-    c2_synsets = []
-    for word, cefr in cefr_map.items():
-        if cefr == "B2":
-            b2_scores.append(zipf_score(zipf_frequency(word, 'en')))
-            b2_synsets.append(len(wn.synsets(word)))
-        elif cefr == "B1":
-            b1_scores.append(zipf_score(zipf_frequency(word, 'en')))
-            b1_synsets.append(len(wn.synsets(word)))
-        elif cefr == "C1":
-            c1_scores.append(zipf_score(zipf_frequency(word, 'en')))
-            c1_synsets.append(len(wn.synsets(word)))
-        elif cefr == "C2":
-            c2_scores.append(zipf_score(zipf_frequency(word, 'en')))
-            c2_synsets.append(len(wn.synsets(word)))
-    
-    print(f"B2 scores: {sum(b2_scores)/len(b2_scores)}, {min(b2_scores)}, {max(b2_scores)}, {sum(b2_synsets)/len(b2_synsets)}, {min(b2_synsets)}, {max(b2_synsets)}")
-    print(f"B1 scores: {sum(b1_scores)/len(b1_scores)}, {min(b1_scores)}, {max(b1_scores)}, {sum(b1_synsets)/len(b1_synsets)}, {min(b1_synsets)}, {max(b1_synsets)}")
-    print(f"C1 scores: {sum(c1_scores)/len(c1_scores)}, {min(c1_scores)}, {max(c1_scores)}, {sum(c1_synsets)/len(c1_synsets)}, {min(c1_synsets)}, {max(c1_synsets)}")
-    print(f"C2 scores: {sum(c2_scores)/len(c2_scores)}, {min(c2_scores)}, {max(c2_scores)}, {sum(c2_synsets)/len(c2_synsets)}, {min(c2_synsets)}, {max(c2_synsets)}")
 
     test_words()

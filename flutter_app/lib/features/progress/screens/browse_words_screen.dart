@@ -6,6 +6,89 @@ import '../../../core/network/api_service.dart';
 import '../../../core/models/models.dart';
 import '../../../app/app_router.dart';
 
+// Animated button widget with flex animation on tap
+class _AnimatedButton extends StatefulWidget {
+  final VoidCallback? onTap;
+  final Color backgroundColor;
+  final Color borderColor;
+  final Widget child;
+
+  const _AnimatedButton({
+    required this.onTap,
+    required this.backgroundColor,
+    required this.borderColor,
+    required this.child,
+  });
+
+  @override
+  State<_AnimatedButton> createState() => _AnimatedButtonState();
+}
+
+class _AnimatedButtonState extends State<_AnimatedButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleTap() {
+    if (widget.onTap != null) {
+      _controller.forward().then((_) {
+        _controller.reverse();
+      });
+      widget.onTap!();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _scaleAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: InkWell(
+            onTap: widget.onTap != null ? _handleTap : null,
+            borderRadius: BorderRadius.circular((8 * 0.8).r),
+            child: Container(
+              width: 120.w * 0.8,
+              height: 32.h * 0.8,
+              padding: EdgeInsets.symmetric(horizontal: 8.w * 0.8),
+              decoration: BoxDecoration(
+                color: widget.backgroundColor,
+                borderRadius: BorderRadius.circular((8 * 0.8).r),
+                border: Border.all(
+                  color: widget.borderColor,
+                ),
+              ),
+              child: widget.child,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 class BrowseWordsScreen extends StatefulWidget {
   final Map<String, dynamic>? arguments;
   
@@ -186,15 +269,24 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
         final currentCount = append ? _progressWords.length + response.words.length : response.words.length;
         final hasMore = response.total > currentCount || response.words.length >= _limit;
         
+        // Sort by difficulty level
+        final sortedProgressWords = List<ProgressWord>.from(response.words)
+          ..sort((a, b) => a.difficultyLevel.compareTo(b.difficultyLevel));
+        final sortedWords = List<WordListItem>.from(convertedWords)
+          ..sort((a, b) => a.difficultyLevel.compareTo(b.difficultyLevel));
+        
         setState(() {
           if (append) {
-            _progressWords.addAll(response.words);
-            _words.addAll(convertedWords);
+            _progressWords.addAll(sortedProgressWords);
+            _words.addAll(sortedWords);
+            // Re-sort the combined lists
+            _progressWords.sort((a, b) => a.difficultyLevel.compareTo(b.difficultyLevel));
+            _words.sort((a, b) => a.difficultyLevel.compareTo(b.difficultyLevel));
             _loadingMore = false;
           } else {
             // Create modifiable copies of the lists
-            _progressWords = List<ProgressWord>.from(response.words);
-            _words = List<WordListItem>.from(convertedWords);
+            _progressWords = sortedProgressWords;
+            _words = sortedWords;
             _loading = false;
           }
           _hasMore = hasMore;
@@ -220,16 +312,71 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
         
         final words = await _apiService.getWords(queryParams);
 
+        // Also fetch progress for these words to show status
+        // Use the same filters to get matching progress words
+        List<ProgressWord> relevantProgressWords = [];
+        if (words.isNotEmpty) {
+          try {
+            final progressQueryParams = <String, dynamic>{
+              'limit': 1000, // Get enough to match all words
+              'offset': 0,
+            };
+            
+            // Apply same filters as word query
+            if (_selectedCategory != null) {
+              if (_selectedSubCategory != null) {
+                progressQueryParams['subcategory_id'] = _selectedSubCategory!.id;
+              } else {
+                progressQueryParams['category_id'] = _selectedCategory!.id;
+              }
+            }
+            
+            if (_searchQuery.isNotEmpty) {
+              progressQueryParams['search'] = _searchQuery;
+            }
+            
+            final progressResponse = await _apiService.getProgressWords(
+              categoryId: progressQueryParams['category_id'] as int?,
+              subcategoryId: progressQueryParams['subcategory_id'] as int?,
+              search: progressQueryParams['search'] as String?,
+              limit: 1000,
+              offset: 0,
+            );
+            
+            // Create a set of word IDs for quick lookup
+            final wordIds = words.map((w) => w.id).toSet();
+            
+            // Filter progress words to only those in the current word list
+            relevantProgressWords = progressResponse.words
+                .where((pw) => wordIds.contains(pw.id))
+                .toList();
+          } catch (e) {
+            // If progress fetch fails, just continue with words
+            debugPrint('Error fetching progress: $e');
+          }
+        }
+
         // Check if there are more items to load (if we got exactly _limit items, there might be more)
         final hasMore = words.length >= _limit;
 
+        // Sort by difficulty level
+        final sortedWords = List<WordListItem>.from(words)
+          ..sort((a, b) => a.difficultyLevel.compareTo(b.difficultyLevel));
+        final sortedProgressWords = List<ProgressWord>.from(relevantProgressWords)
+          ..sort((a, b) => a.difficultyLevel.compareTo(b.difficultyLevel));
+
         setState(() {
           if (append) {
-            _words.addAll(words);
+            _words.addAll(sortedWords);
+            _progressWords.addAll(sortedProgressWords);
+            // Re-sort the combined lists
+            _words.sort((a, b) => a.difficultyLevel.compareTo(b.difficultyLevel));
+            _progressWords.sort((a, b) => a.difficultyLevel.compareTo(b.difficultyLevel));
             _loadingMore = false;
           } else {
             // Create modifiable copy of the list
-            _words = List<WordListItem>.from(words);
+            _words = sortedWords;
+            _progressWords = sortedProgressWords;
             _loading = false;
           }
           _hasMore = hasMore;
@@ -249,33 +396,14 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
 
   Future<void> _addToStack(int wordId) async {
     try {
-      await _apiService.addWords(AddWordsRequest(wordIds: [wordId]));
+      // Update UI immediately for better responsiveness
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Word added to your learning stack!')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
-      }
-    }
-  }
-
-  Future<void> _toggleMastered(int wordId) async {
-    try {
-      final response = await _apiService.markWordKnown(wordId);
-      final isMastered = response['is_mastered'] as bool? ?? true;
-      
-      if (mounted) {
-        // Update the status in progress words if available
         setState(() {
+          // Check if word is already in progress words
           final progressWordIndex = _progressWords.indexWhere((w) => w.id == wordId);
           if (progressWordIndex >= 0) {
+            // Update existing progress word status to 'learning'
             final oldProgressWord = _progressWords[progressWordIndex];
-            // Update status (create new ProgressWord with updated status)
             _progressWords[progressWordIndex] = ProgressWord(
               id: oldProgressWord.id,
               word: oldProgressWord.word,
@@ -284,47 +412,198 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
               categoryName: oldProgressWord.categoryName,
               difficultyLevel: oldProgressWord.difficultyLevel,
               importanceScore: oldProgressWord.importanceScore,
-              status: isMastered ? 'mastered' : 'learning',
-              fibonacciLevel: isMastered ? 10 : 0,
+              status: 'learning',
+              fibonacciLevel: 0,
+              nextReviewDate: oldProgressWord.nextReviewDate,
+              correctCount: oldProgressWord.correctCount,
+              incorrectCount: oldProgressWord.incorrectCount,
+              lastReviewedAt: oldProgressWord.lastReviewedAt,
+              addedAt: oldProgressWord.addedAt ?? DateTime.now().toIso8601String(),
+              masteredAt: oldProgressWord.masteredAt,
+              tone: oldProgressWord.tone,
+              cefrLevel: oldProgressWord.cefrLevel,
+            );
+          } else {
+            // Add new progress word if not in list (for non-progress API views)
+            // Find the word in _words to get its details
+            final wordIndex = _words.indexWhere((w) => w.id == wordId);
+            if (wordIndex >= 0) {
+              final word = _words[wordIndex];
+              // Create a new ProgressWord with 'learning' status
+              final newProgressWord = ProgressWord(
+                id: word.id,
+                word: word.word,
+                pronunciation: word.pronunciation,
+                categoryId: word.categoryId,
+                categoryName: null,
+                difficultyLevel: word.difficultyLevel,
+                importanceScore: word.importanceScore,
+                status: 'learning',
+                fibonacciLevel: 0,
+                nextReviewDate: null,
+                correctCount: 0,
+                incorrectCount: 0,
+                lastReviewedAt: null,
+                addedAt: DateTime.now().toIso8601String(),
+                masteredAt: null,
+                tone: null,
+                cefrLevel: null,
+              );
+              _progressWords.add(newProgressWord);
+              // Re-sort to maintain order
+              _progressWords.sort((a, b) => a.difficultyLevel.compareTo(b.difficultyLevel));
+            }
+          }
+        });
+      }
+      
+      // Then make the API call
+      await _apiService.addWords(AddWordsRequest(wordIds: [wordId]));
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Word added to your learning stack!')),
+        );
+      }
+    } catch (e) {
+      // Revert the UI change if API call fails
+      if (mounted) {
+        // Reload to get correct state
+        _loadWords();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _toggleMastered(int wordId) async {
+    // Get current state first
+    final currentProgressWordIndex = _progressWords.indexWhere((w) => w.id == wordId);
+    final wasMastered = currentProgressWordIndex >= 0 
+        ? _progressWords[currentProgressWordIndex].status == 'mastered'
+        : false;
+    final newIsMastered = !wasMastered;
+    
+    // Update UI immediately for better responsiveness
+    if (mounted) {
+      setState(() {
+        final progressWordIndex = _progressWords.indexWhere((w) => w.id == wordId);
+        if (progressWordIndex >= 0) {
+          final oldProgressWord = _progressWords[progressWordIndex];
+          // Update status (create new ProgressWord with updated status)
+          _progressWords[progressWordIndex] = ProgressWord(
+            id: oldProgressWord.id,
+            word: oldProgressWord.word,
+            pronunciation: oldProgressWord.pronunciation,
+            categoryId: oldProgressWord.categoryId,
+            categoryName: oldProgressWord.categoryName,
+            difficultyLevel: oldProgressWord.difficultyLevel,
+            importanceScore: oldProgressWord.importanceScore,
+            status: newIsMastered ? 'mastered' : 'learning',
+            fibonacciLevel: newIsMastered ? 10 : 0,
+            nextReviewDate: oldProgressWord.nextReviewDate,
+            correctCount: oldProgressWord.correctCount,
+            incorrectCount: oldProgressWord.incorrectCount,
+            lastReviewedAt: oldProgressWord.lastReviewedAt,
+            addedAt: oldProgressWord.addedAt,
+            masteredAt: newIsMastered ? DateTime.now().toIso8601String() : null,
+            tone: oldProgressWord.tone,
+            cefrLevel: oldProgressWord.cefrLevel,
+          );
+          // Update words list with converted progress word if using progress API
+          if (_useProgressAPI) {
+            final wordIndex = _words.indexWhere((w) => w.id == wordId);
+            if (wordIndex >= 0) {
+              _words[wordIndex] = WordListItem(
+                id: oldProgressWord.id,
+                word: oldProgressWord.word ?? '',
+                pronunciation: oldProgressWord.pronunciation,
+                categoryId: oldProgressWord.categoryId,
+                difficultyLevel: oldProgressWord.difficultyLevel,
+                importanceScore: oldProgressWord.importanceScore,
+              );
+            }
+          }
+        } else {
+          // If not in progress words, add it
+          final wordIndex = _words.indexWhere((w) => w.id == wordId);
+          if (wordIndex >= 0) {
+            final word = _words[wordIndex];
+            final newProgressWord = ProgressWord(
+              id: word.id,
+              word: word.word,
+              pronunciation: word.pronunciation,
+              categoryId: word.categoryId,
+              categoryName: null,
+              difficultyLevel: word.difficultyLevel,
+              importanceScore: word.importanceScore,
+              status: newIsMastered ? 'mastered' : 'learning',
+              fibonacciLevel: newIsMastered ? 10 : 0,
+              nextReviewDate: null,
+              correctCount: 0,
+              incorrectCount: 0,
+              lastReviewedAt: null,
+              addedAt: DateTime.now().toIso8601String(),
+              masteredAt: newIsMastered ? DateTime.now().toIso8601String() : null,
+              tone: null,
+              cefrLevel: null,
+            );
+            _progressWords.add(newProgressWord);
+            _progressWords.sort((a, b) => a.difficultyLevel.compareTo(b.difficultyLevel));
+          }
+        }
+      });
+    }
+    
+    try {
+      // Then make the API call
+      final response = await _apiService.markWordKnown(wordId);
+      final actualIsMastered = response['is_mastered'] as bool? ?? true;
+      
+      // Update with actual response if different
+      if (mounted && actualIsMastered != newIsMastered) {
+        setState(() {
+          final progressWordIndex = _progressWords.indexWhere((w) => w.id == wordId);
+          if (progressWordIndex >= 0) {
+            final oldProgressWord = _progressWords[progressWordIndex];
+            _progressWords[progressWordIndex] = ProgressWord(
+              id: oldProgressWord.id,
+              word: oldProgressWord.word,
+              pronunciation: oldProgressWord.pronunciation,
+              categoryId: oldProgressWord.categoryId,
+              categoryName: oldProgressWord.categoryName,
+              difficultyLevel: oldProgressWord.difficultyLevel,
+              importanceScore: oldProgressWord.importanceScore,
+              status: actualIsMastered ? 'mastered' : 'learning',
+              fibonacciLevel: actualIsMastered ? 10 : 0,
               nextReviewDate: oldProgressWord.nextReviewDate,
               correctCount: oldProgressWord.correctCount,
               incorrectCount: oldProgressWord.incorrectCount,
               lastReviewedAt: oldProgressWord.lastReviewedAt,
               addedAt: oldProgressWord.addedAt,
-              masteredAt: isMastered ? DateTime.now().toIso8601String() : null,
+              masteredAt: actualIsMastered ? DateTime.now().toIso8601String() : null,
               tone: oldProgressWord.tone,
               cefrLevel: oldProgressWord.cefrLevel,
             );
-            // Update words list with converted progress word if using progress API
-            if (_useProgressAPI) {
-              final wordIndex = _words.indexWhere((w) => w.id == wordId);
-              if (wordIndex >= 0) {
-                _words[wordIndex] = WordListItem(
-                  id: oldProgressWord.id,
-                  word: oldProgressWord.word ?? '',
-                  pronunciation: oldProgressWord.pronunciation,
-                  categoryId: oldProgressWord.categoryId,
-                  difficultyLevel: oldProgressWord.difficultyLevel,
-                  importanceScore: oldProgressWord.importanceScore,
-                );
-              }
-            }
-          } else {
-            // If not in progress words, reload to get updated status
-            _loadWords();
           }
         });
-        
+      }
+      
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(isMastered 
+            content: Text(actualIsMastered 
               ? 'Word marked as mastered!' 
               : 'Word unmarked as mastered!'),
           ),
         );
       }
     } catch (e) {
+      // Revert the UI change if API call fails
       if (mounted) {
+        // Reload to get correct state
+        _loadWords();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e')),
         );
@@ -347,6 +626,23 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
     }
     // For words without progress, default to false
     return false;
+  }
+
+  String? _getWordStatus(int wordId) {
+    // Check if word is in progress from progress words
+    final progressWord = _progressWords.firstWhere(
+      (pw) => pw.id == wordId,
+      orElse: () => const ProgressWord(
+        id: 0,
+        status: '',
+        fibonacciLevel: 0,
+      ),
+    );
+    // Return status if word is found and has a valid status
+    if (progressWord.id != 0 && progressWord.status.isNotEmpty) {
+      return progressWord.status;
+    }
+    return null;
   }
 
   String _getFilterTitle() {
@@ -687,87 +983,122 @@ class _BrowseWordsScreenState extends State<BrowseWordsScreen> {
                                               mainAxisSize: MainAxisSize.min,
                                               crossAxisAlignment: CrossAxisAlignment.end,
                                               children: [
-                                                // Add to Stack button
-                                                InkWell(
-                                                  onTap: () => _addToStack(word.id),
-                                                  borderRadius: BorderRadius.circular((8 * 0.8).r),
-                                                  child: Container(
-                                                    width: 120.w * 0.8,
-                                                    height: 32.h * 0.8,
-                                                    padding: EdgeInsets.symmetric(horizontal: 8.w * 0.8),
-                                                    decoration: BoxDecoration(
-                                                      color: Theme.of(context).colorScheme.primaryContainer,
-                                                      borderRadius: BorderRadius.circular((8 * 0.8).r),
-                                                      border: Border.all(
-                                                        color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                                                      ),
-                                                    ),
-                                                    child: Row(
-                                                      mainAxisSize: MainAxisSize.min,
-                                                      mainAxisAlignment: MainAxisAlignment.center,
-                                                      children: [
-                                                        Icon(
-                                                          Icons.add_circle_outline,
-                                                          size: 14.sp * 0.8,
-                                                          color: Theme.of(context).colorScheme.onPrimaryContainer,
-                                                        ),
-                                                        SizedBox(width: 4.w * 0.8),
-                                                        Text(
-                                                          'Add to Stack',
-                                                          style: TextStyle(
-                                                            fontSize: 11.sp * 0.8,
-                                                            fontWeight: FontWeight.w500,
-                                                            color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                                // Add to Stack / Status button
+                                                Builder(
+                                                  builder: (context) {
+                                                    final status = _getWordStatus(word.id);
+                                                    final isInProgress = status != null;
+                                                    
+                                                    String buttonText;
+                                                    IconData buttonIcon;
+                                                    Color backgroundColor;
+                                                    Color textColor;
+                                                    
+                                                    if (isInProgress) {
+                                                      // Show status based on progress
+                                                      switch (status) {
+                                                        case 'learning':
+                                                          buttonText = 'Learning';
+                                                          buttonIcon = Icons.school_outlined;
+                                                          backgroundColor = Theme.of(context).colorScheme.tertiaryContainer;
+                                                          textColor = Theme.of(context).colorScheme.onTertiaryContainer;
+                                                          break;
+                                                        case 'reviewing':
+                                                          buttonText = 'Reviewing';
+                                                          buttonIcon = Icons.refresh;
+                                                          backgroundColor = Theme.of(context).colorScheme.secondaryContainer;
+                                                          textColor = Theme.of(context).colorScheme.onSecondaryContainer;
+                                                          break;
+                                                        case 'mastered':
+                                                          buttonText = 'Mastered';
+                                                          buttonIcon = Icons.check_circle;
+                                                          backgroundColor = Theme.of(context).colorScheme.primaryContainer;
+                                                          textColor = Theme.of(context).colorScheme.onPrimaryContainer;
+                                                          break;
+                                                        default:
+                                                          buttonText = 'In Progress';
+                                                          buttonIcon = Icons.schedule;
+                                                          backgroundColor = Theme.of(context).colorScheme.surfaceContainerHighest;
+                                                          textColor = Theme.of(context).colorScheme.onSurfaceVariant;
+                                                      }
+                                                    } else {
+                                                      // Show "Add to Stack" for words not in progress
+                                                      buttonText = 'Add to Stack';
+                                                      buttonIcon = Icons.add_circle_outline;
+                                                      backgroundColor = Theme.of(context).colorScheme.primaryContainer;
+                                                      textColor = Theme.of(context).colorScheme.onPrimaryContainer;
+                                                    }
+                                                    
+                                                    return _AnimatedButton(
+                                                      onTap: isInProgress ? null : () => _addToStack(word.id),
+                                                      backgroundColor: backgroundColor,
+                                                          borderColor: isInProgress 
+                                                              ? backgroundColor.withOpacity(0.3)
+                                                              : Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                                                      child: Row(
+                                                        children: [
+                                                          Icon(
+                                                            buttonIcon,
+                                                            size: 14.sp * 0.8,
+                                                            color: textColor,
                                                           ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
+                                                          Expanded(
+                                                            child: Center(
+                                                              child: Text(
+                                                                buttonText,
+                                                                style: TextStyle(
+                                                                  fontSize: 11.sp * 0.8,
+                                                                  fontWeight: FontWeight.w500,
+                                                                  color: textColor,
+                                                                ),
+                                                                overflow: TextOverflow.ellipsis,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    );
+                                                  },
                                                 ),
                                                 SizedBox(height: 6.h * 0.8),
                                                 // I know button
-                                                InkWell(
+                                                _AnimatedButton(
                                                   onTap: () => _toggleMastered(word.id),
-                                                  borderRadius: BorderRadius.circular((8 * 0.8).r),
-                                                  child: Container(
-                                                    width: 120.w * 0.8,
-                                                    height: 32.h * 0.8,
-                                                    padding: EdgeInsets.symmetric(horizontal: 8.w * 0.8),
-                                                    decoration: BoxDecoration(
-                                                      color: _isWordMastered(word.id)
-                                                          ? Theme.of(context).colorScheme.secondaryContainer
-                                                          : Theme.of(context).colorScheme.surfaceContainerHighest,
-                                                      borderRadius: BorderRadius.circular((8 * 0.8).r),
-                                                      border: Border.all(
+                                                  backgroundColor: _isWordMastered(word.id)
+                                                      ? Theme.of(context).colorScheme.secondaryContainer
+                                                      : Theme.of(context).colorScheme.surfaceContainerHighest,
+                                                  borderColor: _isWordMastered(word.id)
+                                                      ? Theme.of(context).colorScheme.secondary.withOpacity(0.3)
+                                                      : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                                                  child: Row(
+                                                    children: [
+                                                      Icon(
+                                                        _isWordMastered(word.id) ? Icons.check_circle : Icons.check_circle_outline,
+                                                        size: 14.sp * 0.8,
                                                         color: _isWordMastered(word.id)
-                                                            ? Theme.of(context).colorScheme.secondary.withOpacity(0.3)
-                                                            : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                                                            ? Theme.of(context).colorScheme.onSecondaryContainer
+                                                            : Theme.of(context).colorScheme.onSurfaceVariant,
                                                       ),
-                                                    ),
-                                                    child: Row(
-                                                      mainAxisSize: MainAxisSize.min,
-                                                      mainAxisAlignment: MainAxisAlignment.center,
-                                                      children: [
-                                                        Icon(
-                                                          _isWordMastered(word.id) ? Icons.check_circle : Icons.check_circle_outline,
-                                                          size: 14.sp * 0.8,
-                                                          color: _isWordMastered(word.id)
-                                                              ? Theme.of(context).colorScheme.onSecondaryContainer
-                                                              : Theme.of(context).colorScheme.onSurfaceVariant,
-                                                        ),
-                                                        SizedBox(width: 4.w * 0.8),
-                                                        Text(
-                                                          _isWordMastered(word.id) ? 'Mark Unlearned' : 'Mark Learned',
-                                                          style: TextStyle(
-                                                            fontSize: 11.sp * 0.8,
-                                                            fontWeight: FontWeight.w500,
-                                                            color: _isWordMastered(word.id)
-                                                                ? Theme.of(context).colorScheme.onSecondaryContainer
-                                                                : Theme.of(context).colorScheme.onSurfaceVariant,
+                                                      Expanded(
+                                                        child: Center(
+                                                          child: FittedBox(
+                                                            fit: BoxFit.scaleDown,
+                                                            child: Text(
+                                                              _isWordMastered(word.id) ? 'Mark Unlearned' : 'Mark Learned',
+                                                              style: TextStyle(
+                                                                fontSize: 11.sp * 0.8,
+                                                                fontWeight: FontWeight.w500,
+                                                                color: _isWordMastered(word.id)
+                                                                    ? Theme.of(context).colorScheme.onSecondaryContainer
+                                                                    : Theme.of(context).colorScheme.onSurfaceVariant,
+                                                              ),
+                                                              maxLines: 1,
+                                                              overflow: TextOverflow.ellipsis,
+                                                            ),
                                                           ),
                                                         ),
-                                                      ],
-                                                    ),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ),
                                               ],

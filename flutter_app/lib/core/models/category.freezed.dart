@@ -27,6 +27,8 @@ mixin _$Category {
   int? get parentCategoryId => throw _privateConstructorUsedError;
   @JsonKey(name: 'importance_weight')
   double get importanceWeight => throw _privateConstructorUsedError;
+  @JsonKey(name: 'word_count')
+  int get wordCount => throw _privateConstructorUsedError;
 
   /// Serializes this Category to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -48,7 +50,8 @@ abstract class $CategoryCopyWith<$Res> {
       String name,
       String? description,
       @JsonKey(name: 'parent_category_id') int? parentCategoryId,
-      @JsonKey(name: 'importance_weight') double importanceWeight});
+      @JsonKey(name: 'importance_weight') double importanceWeight,
+      @JsonKey(name: 'word_count') int wordCount});
 }
 
 /// @nodoc
@@ -71,6 +74,7 @@ class _$CategoryCopyWithImpl<$Res, $Val extends Category>
     Object? description = freezed,
     Object? parentCategoryId = freezed,
     Object? importanceWeight = null,
+    Object? wordCount = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -93,6 +97,10 @@ class _$CategoryCopyWithImpl<$Res, $Val extends Category>
           ? _value.importanceWeight
           : importanceWeight // ignore: cast_nullable_to_non_nullable
               as double,
+      wordCount: null == wordCount
+          ? _value.wordCount
+          : wordCount // ignore: cast_nullable_to_non_nullable
+              as int,
     ) as $Val);
   }
 }
@@ -110,7 +118,8 @@ abstract class _$$CategoryImplCopyWith<$Res>
       String name,
       String? description,
       @JsonKey(name: 'parent_category_id') int? parentCategoryId,
-      @JsonKey(name: 'importance_weight') double importanceWeight});
+      @JsonKey(name: 'importance_weight') double importanceWeight,
+      @JsonKey(name: 'word_count') int wordCount});
 }
 
 /// @nodoc
@@ -131,6 +140,7 @@ class __$$CategoryImplCopyWithImpl<$Res>
     Object? description = freezed,
     Object? parentCategoryId = freezed,
     Object? importanceWeight = null,
+    Object? wordCount = null,
   }) {
     return _then(_$CategoryImpl(
       id: null == id
@@ -153,6 +163,10 @@ class __$$CategoryImplCopyWithImpl<$Res>
           ? _value.importanceWeight
           : importanceWeight // ignore: cast_nullable_to_non_nullable
               as double,
+      wordCount: null == wordCount
+          ? _value.wordCount
+          : wordCount // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }
@@ -165,7 +179,8 @@ class _$CategoryImpl implements _Category {
       required this.name,
       this.description,
       @JsonKey(name: 'parent_category_id') this.parentCategoryId,
-      @JsonKey(name: 'importance_weight') this.importanceWeight = 5.0});
+      @JsonKey(name: 'importance_weight') this.importanceWeight = 5.0,
+      @JsonKey(name: 'word_count') this.wordCount = 0});
 
   factory _$CategoryImpl.fromJson(Map<String, dynamic> json) =>
       _$$CategoryImplFromJson(json);
@@ -182,10 +197,13 @@ class _$CategoryImpl implements _Category {
   @override
   @JsonKey(name: 'importance_weight')
   final double importanceWeight;
+  @override
+  @JsonKey(name: 'word_count')
+  final int wordCount;
 
   @override
   String toString() {
-    return 'Category(id: $id, name: $name, description: $description, parentCategoryId: $parentCategoryId, importanceWeight: $importanceWeight)';
+    return 'Category(id: $id, name: $name, description: $description, parentCategoryId: $parentCategoryId, importanceWeight: $importanceWeight, wordCount: $wordCount)';
   }
 
   @override
@@ -200,13 +218,15 @@ class _$CategoryImpl implements _Category {
             (identical(other.parentCategoryId, parentCategoryId) ||
                 other.parentCategoryId == parentCategoryId) &&
             (identical(other.importanceWeight, importanceWeight) ||
-                other.importanceWeight == importanceWeight));
+                other.importanceWeight == importanceWeight) &&
+            (identical(other.wordCount, wordCount) ||
+                other.wordCount == wordCount));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, id, name, description, parentCategoryId, importanceWeight);
+  int get hashCode => Object.hash(runtimeType, id, name, description,
+      parentCategoryId, importanceWeight, wordCount);
 
   /// Create a copy of Category
   /// with the given fields replaced by the non-null parameter values.
@@ -226,12 +246,12 @@ class _$CategoryImpl implements _Category {
 
 abstract class _Category implements Category {
   const factory _Category(
-          {required final int id,
-          required final String name,
-          final String? description,
-          @JsonKey(name: 'parent_category_id') final int? parentCategoryId,
-          @JsonKey(name: 'importance_weight') final double importanceWeight}) =
-      _$CategoryImpl;
+      {required final int id,
+      required final String name,
+      final String? description,
+      @JsonKey(name: 'parent_category_id') final int? parentCategoryId,
+      @JsonKey(name: 'importance_weight') final double importanceWeight,
+      @JsonKey(name: 'word_count') final int wordCount}) = _$CategoryImpl;
 
   factory _Category.fromJson(Map<String, dynamic> json) =
       _$CategoryImpl.fromJson;
@@ -248,6 +268,9 @@ abstract class _Category implements Category {
   @override
   @JsonKey(name: 'importance_weight')
   double get importanceWeight;
+  @override
+  @JsonKey(name: 'word_count')
+  int get wordCount;
 
   /// Create a copy of Category
   /// with the given fields replaced by the non-null parameter values.

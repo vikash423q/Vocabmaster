@@ -132,3 +132,38 @@ Map<String, dynamic> _$$ChatResponseImplToJson(_$ChatResponseImpl instance) =>
     <String, dynamic>{
       'response': instance.response,
     };
+
+_$WordContextRequestImpl _$$WordContextRequestImplFromJson(
+        Map<String, dynamic> json) =>
+    _$WordContextRequestImpl(
+      wordId: (json['word_id'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$$WordContextRequestImplToJson(
+        _$WordContextRequestImpl instance) =>
+    <String, dynamic>{
+      'word_id': instance.wordId,
+    };
+
+_$WordContextResponseImpl _$$WordContextResponseImplFromJson(
+        Map<String, dynamic> json) =>
+    _$WordContextResponseImpl(
+      tweets:
+          (json['tweets'] as List<dynamic>).map((e) => e as String).toList(),
+      references: (json['references'] as List<dynamic>)
+          .map((e) => e as String)
+          .toList(),
+      quotes:
+          (json['quotes'] as List<dynamic>).map((e) => e as String).toList(),
+      events:
+          (json['events'] as List<dynamic>).map((e) => e as String).toList(),
+    );
+
+Map<String, dynamic> _$$WordContextResponseImplToJson(
+        _$WordContextResponseImpl instance) =>
+    <String, dynamic>{
+      'tweets': instance.tweets,
+      'references': instance.references,
+      'quotes': instance.quotes,
+      'events': instance.events,
+    };

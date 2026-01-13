@@ -12,6 +12,8 @@ import '../features/main_navigation/screens/main_navigation_screen.dart';
 import '../features/progress/screens/browse_words_screen.dart';
 import '../features/progress/screens/category_exploration_screen.dart';
 import '../features/progress/screens/subcategories_screen.dart';
+import '../features/onboarding/screens/how_it_works_screen.dart';
+import 'widgets/app_logo.dart';
 
 class AppRouter {
   static const String splash = '/';
@@ -29,6 +31,7 @@ class AppRouter {
   static const String browseWords = '/browse-words';
   static const String categoryExploration = '/category-exploration';
   static const String subcategories = '/subcategories';
+  static const String howItWorks = '/how-it-works';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -70,8 +73,12 @@ class AppRouter {
       case wordDetail:
         final args = settings.arguments as Map<String, dynamic>?;
         final wordId = args?['wordId'] as int? ?? 0;
+        final fromReview = args?['fromReview'] as bool? ?? false;
         return MaterialPageRoute(
-          builder: (_) => ComprehensiveReviewScreen(wordId: wordId),
+          builder: (_) => ComprehensiveReviewScreen(
+            wordId: wordId,
+            fromReview: fromReview,
+          ),
         );
       case browseWords:
         final args = settings.arguments as Map<String, dynamic>?;
@@ -94,6 +101,20 @@ class AppRouter {
         }
         return MaterialPageRoute(
           builder: (_) => SubcategoriesScreen(parentCategory: category),
+        );
+      case howItWorks:
+        final args = settings.arguments as Map<String, dynamic>?;
+        final showSkipButton = args?['showSkipButton'] as bool? ?? false;
+        return MaterialPageRoute(
+          builder: (context) => HowItWorksScreen(
+            showSkipButton: showSkipButton,
+            onComplete: () {
+              // Navigate to assessment if from onboarding flow
+              if (showSkipButton) {
+                Navigator.pushReplacementNamed(context, AppRouter.assessment);
+              }
+            },
+          ),
         );
       default:
         return MaterialPageRoute(
@@ -137,8 +158,13 @@ class _SplashScreenState extends State<SplashScreen> {
         if (state is AuthAuthenticated) {
           // Check if user needs assessment (currentLevel is null)
           if (state.user.currentLevel == null) {
-            // Navigate to assessment for first-time users
-            Navigator.of(context).pushReplacementNamed(AppRouter.assessment);
+            // Show "How it works" for first-time users, then assessment
+            Navigator.of(context).pushReplacementNamed(
+              AppRouter.howItWorks,
+              arguments: {
+                'showSkipButton': true,
+              },
+            );
           } else {
             // Navigate to main app if already assessed
             Navigator.of(context).pushReplacementNamed(AppRouter.main);
@@ -153,9 +179,15 @@ class _SplashScreenState extends State<SplashScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
+              AppLogo(size: 100),
+              const SizedBox(height: 24),
+              Text(
                 'VocabMaster',
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onBackground,
+                ),
               ),
               const SizedBox(height: 20),
               const CircularProgressIndicator(),

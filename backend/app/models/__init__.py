@@ -4,6 +4,7 @@ from app.models.word import Word
 from app.models.word_definition import WordDefinition
 from app.models.word_etymology import WordEtymology
 from app.models.word_media import WordMedia
+from app.models.word_synonym import WordSynonym
 from app.models.user_word_progress import UserWordProgress
 from app.models.daily_word_stack import DailyWordStack
 from app.models.quiz_sessions import QuizSession
@@ -16,6 +17,7 @@ __all__ = [
     "WordDefinition",
     "WordEtymology",
     "WordMedia",
+    "WordSynonym",
     "UserWordProgress",
     "DailyWordStack",
     "QuizSession",

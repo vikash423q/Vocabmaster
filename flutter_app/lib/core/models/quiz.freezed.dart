@@ -1688,3 +1688,406 @@ abstract class _ChatResponse implements ChatResponse {
   _$$ChatResponseImplCopyWith<_$ChatResponseImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
+
+WordContextRequest _$WordContextRequestFromJson(Map<String, dynamic> json) {
+  return _WordContextRequest.fromJson(json);
+}
+
+/// @nodoc
+mixin _$WordContextRequest {
+  @JsonKey(name: 'word_id')
+  int get wordId => throw _privateConstructorUsedError;
+
+  /// Serializes this WordContextRequest to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of WordContextRequest
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $WordContextRequestCopyWith<WordContextRequest> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $WordContextRequestCopyWith<$Res> {
+  factory $WordContextRequestCopyWith(
+          WordContextRequest value, $Res Function(WordContextRequest) then) =
+      _$WordContextRequestCopyWithImpl<$Res, WordContextRequest>;
+  @useResult
+  $Res call({@JsonKey(name: 'word_id') int wordId});
+}
+
+/// @nodoc
+class _$WordContextRequestCopyWithImpl<$Res, $Val extends WordContextRequest>
+    implements $WordContextRequestCopyWith<$Res> {
+  _$WordContextRequestCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of WordContextRequest
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? wordId = null,
+  }) {
+    return _then(_value.copyWith(
+      wordId: null == wordId
+          ? _value.wordId
+          : wordId // ignore: cast_nullable_to_non_nullable
+              as int,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$WordContextRequestImplCopyWith<$Res>
+    implements $WordContextRequestCopyWith<$Res> {
+  factory _$$WordContextRequestImplCopyWith(_$WordContextRequestImpl value,
+          $Res Function(_$WordContextRequestImpl) then) =
+      __$$WordContextRequestImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({@JsonKey(name: 'word_id') int wordId});
+}
+
+/// @nodoc
+class __$$WordContextRequestImplCopyWithImpl<$Res>
+    extends _$WordContextRequestCopyWithImpl<$Res, _$WordContextRequestImpl>
+    implements _$$WordContextRequestImplCopyWith<$Res> {
+  __$$WordContextRequestImplCopyWithImpl(_$WordContextRequestImpl _value,
+      $Res Function(_$WordContextRequestImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of WordContextRequest
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? wordId = null,
+  }) {
+    return _then(_$WordContextRequestImpl(
+      wordId: null == wordId
+          ? _value.wordId
+          : wordId // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$WordContextRequestImpl implements _WordContextRequest {
+  const _$WordContextRequestImpl(
+      {@JsonKey(name: 'word_id') required this.wordId});
+
+  factory _$WordContextRequestImpl.fromJson(Map<String, dynamic> json) =>
+      _$$WordContextRequestImplFromJson(json);
+
+  @override
+  @JsonKey(name: 'word_id')
+  final int wordId;
+
+  @override
+  String toString() {
+    return 'WordContextRequest(wordId: $wordId)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$WordContextRequestImpl &&
+            (identical(other.wordId, wordId) || other.wordId == wordId));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, wordId);
+
+  /// Create a copy of WordContextRequest
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$WordContextRequestImplCopyWith<_$WordContextRequestImpl> get copyWith =>
+      __$$WordContextRequestImplCopyWithImpl<_$WordContextRequestImpl>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$WordContextRequestImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _WordContextRequest implements WordContextRequest {
+  const factory _WordContextRequest(
+          {@JsonKey(name: 'word_id') required final int wordId}) =
+      _$WordContextRequestImpl;
+
+  factory _WordContextRequest.fromJson(Map<String, dynamic> json) =
+      _$WordContextRequestImpl.fromJson;
+
+  @override
+  @JsonKey(name: 'word_id')
+  int get wordId;
+
+  /// Create a copy of WordContextRequest
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$WordContextRequestImplCopyWith<_$WordContextRequestImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+WordContextResponse _$WordContextResponseFromJson(Map<String, dynamic> json) {
+  return _WordContextResponse.fromJson(json);
+}
+
+/// @nodoc
+mixin _$WordContextResponse {
+  List<String> get tweets => throw _privateConstructorUsedError;
+  List<String> get references => throw _privateConstructorUsedError;
+  List<String> get quotes => throw _privateConstructorUsedError;
+  List<String> get events => throw _privateConstructorUsedError;
+
+  /// Serializes this WordContextResponse to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of WordContextResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $WordContextResponseCopyWith<WordContextResponse> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $WordContextResponseCopyWith<$Res> {
+  factory $WordContextResponseCopyWith(
+          WordContextResponse value, $Res Function(WordContextResponse) then) =
+      _$WordContextResponseCopyWithImpl<$Res, WordContextResponse>;
+  @useResult
+  $Res call(
+      {List<String> tweets,
+      List<String> references,
+      List<String> quotes,
+      List<String> events});
+}
+
+/// @nodoc
+class _$WordContextResponseCopyWithImpl<$Res, $Val extends WordContextResponse>
+    implements $WordContextResponseCopyWith<$Res> {
+  _$WordContextResponseCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of WordContextResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? tweets = null,
+    Object? references = null,
+    Object? quotes = null,
+    Object? events = null,
+  }) {
+    return _then(_value.copyWith(
+      tweets: null == tweets
+          ? _value.tweets
+          : tweets // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      references: null == references
+          ? _value.references
+          : references // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      quotes: null == quotes
+          ? _value.quotes
+          : quotes // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      events: null == events
+          ? _value.events
+          : events // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$WordContextResponseImplCopyWith<$Res>
+    implements $WordContextResponseCopyWith<$Res> {
+  factory _$$WordContextResponseImplCopyWith(_$WordContextResponseImpl value,
+          $Res Function(_$WordContextResponseImpl) then) =
+      __$$WordContextResponseImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {List<String> tweets,
+      List<String> references,
+      List<String> quotes,
+      List<String> events});
+}
+
+/// @nodoc
+class __$$WordContextResponseImplCopyWithImpl<$Res>
+    extends _$WordContextResponseCopyWithImpl<$Res, _$WordContextResponseImpl>
+    implements _$$WordContextResponseImplCopyWith<$Res> {
+  __$$WordContextResponseImplCopyWithImpl(_$WordContextResponseImpl _value,
+      $Res Function(_$WordContextResponseImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of WordContextResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? tweets = null,
+    Object? references = null,
+    Object? quotes = null,
+    Object? events = null,
+  }) {
+    return _then(_$WordContextResponseImpl(
+      tweets: null == tweets
+          ? _value._tweets
+          : tweets // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      references: null == references
+          ? _value._references
+          : references // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      quotes: null == quotes
+          ? _value._quotes
+          : quotes // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      events: null == events
+          ? _value._events
+          : events // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$WordContextResponseImpl implements _WordContextResponse {
+  const _$WordContextResponseImpl(
+      {required final List<String> tweets,
+      required final List<String> references,
+      required final List<String> quotes,
+      required final List<String> events})
+      : _tweets = tweets,
+        _references = references,
+        _quotes = quotes,
+        _events = events;
+
+  factory _$WordContextResponseImpl.fromJson(Map<String, dynamic> json) =>
+      _$$WordContextResponseImplFromJson(json);
+
+  final List<String> _tweets;
+  @override
+  List<String> get tweets {
+    if (_tweets is EqualUnmodifiableListView) return _tweets;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_tweets);
+  }
+
+  final List<String> _references;
+  @override
+  List<String> get references {
+    if (_references is EqualUnmodifiableListView) return _references;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_references);
+  }
+
+  final List<String> _quotes;
+  @override
+  List<String> get quotes {
+    if (_quotes is EqualUnmodifiableListView) return _quotes;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_quotes);
+  }
+
+  final List<String> _events;
+  @override
+  List<String> get events {
+    if (_events is EqualUnmodifiableListView) return _events;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_events);
+  }
+
+  @override
+  String toString() {
+    return 'WordContextResponse(tweets: $tweets, references: $references, quotes: $quotes, events: $events)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$WordContextResponseImpl &&
+            const DeepCollectionEquality().equals(other._tweets, _tweets) &&
+            const DeepCollectionEquality()
+                .equals(other._references, _references) &&
+            const DeepCollectionEquality().equals(other._quotes, _quotes) &&
+            const DeepCollectionEquality().equals(other._events, _events));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      const DeepCollectionEquality().hash(_tweets),
+      const DeepCollectionEquality().hash(_references),
+      const DeepCollectionEquality().hash(_quotes),
+      const DeepCollectionEquality().hash(_events));
+
+  /// Create a copy of WordContextResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$WordContextResponseImplCopyWith<_$WordContextResponseImpl> get copyWith =>
+      __$$WordContextResponseImplCopyWithImpl<_$WordContextResponseImpl>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$WordContextResponseImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _WordContextResponse implements WordContextResponse {
+  const factory _WordContextResponse(
+      {required final List<String> tweets,
+      required final List<String> references,
+      required final List<String> quotes,
+      required final List<String> events}) = _$WordContextResponseImpl;
+
+  factory _WordContextResponse.fromJson(Map<String, dynamic> json) =
+      _$WordContextResponseImpl.fromJson;
+
+  @override
+  List<String> get tweets;
+  @override
+  List<String> get references;
+  @override
+  List<String> get quotes;
+  @override
+  List<String> get events;
+
+  /// Create a copy of WordContextResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$WordContextResponseImplCopyWith<_$WordContextResponseImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}

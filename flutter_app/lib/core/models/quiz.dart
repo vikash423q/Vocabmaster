@@ -105,3 +105,26 @@ class ChatResponse with _$ChatResponse {
   factory ChatResponse.fromJson(Map<String, dynamic> json) =>
       _$ChatResponseFromJson(json);
 }
+
+@freezed
+class WordContextRequest with _$WordContextRequest {
+  const factory WordContextRequest({
+    @JsonKey(name: 'word_id') required int wordId,
+  }) = _WordContextRequest;
+
+  factory WordContextRequest.fromJson(Map<String, dynamic> json) =>
+      _$WordContextRequestFromJson(json);
+}
+
+@freezed
+class WordContextResponse with _$WordContextResponse {
+  const factory WordContextResponse({
+    required List<String> tweets,
+    required List<String> references,
+    required List<String> quotes,
+    required List<String> events,
+  }) = _WordContextResponse;
+
+  factory WordContextResponse.fromJson(Map<String, dynamic> json) =>
+      _$WordContextResponseFromJson(json);
+}

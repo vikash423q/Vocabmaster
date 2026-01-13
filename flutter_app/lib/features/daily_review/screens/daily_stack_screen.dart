@@ -138,21 +138,7 @@ class _DailyStackScreenState extends State<DailyStackScreen> {
                   ),
               ],
             ),
-            actions: [
-              if (unreviewed.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Center(
-                    child: Text(
-                      '${unreviewed.length} left',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16.sp,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
+            actions: [],
           ),
           body: unreviewed.isEmpty
               ? _buildEmptyState()
@@ -186,20 +172,39 @@ class _DailyStackScreenState extends State<DailyStackScreen> {
       // Handle navigation based on correctness
       if (!isCorrect) {
         // Navigate to comprehensive review screen after 3 seconds
-        Timer(const Duration(seconds: 3), () {
+        Timer(const Duration(seconds: 2), () {
           if (mounted) {
             Navigator.pushNamed(
               context,
               AppRouter.wordDetail,
-              arguments: {'wordId': item.wordId},
+              arguments: {
+                'wordId': item.wordId,
+                'fromReview': true,
+              },
             ).then((_) {
               _removeReviewedItem(item.wordId);
             });
           }
         });
       } else {
-        // Correct answer - show word details and continue
-        _showCorrectAnswer(context, item, reviewResponse.newLevel);
+        // Correct answer - navigate to comprehensive review screen
+        // For new words (level 0), always navigate to review screen
+        if (question.level == 0) {
+          Timer(const Duration(seconds: 1), () {
+            if (mounted) {
+              Navigator.pushNamed(
+                context,
+                AppRouter.wordDetail,
+                arguments: {'wordId': item.wordId},
+              ).then((_) {
+                _removeReviewedItem(item.wordId);
+              });
+            }
+          });
+        } else {
+          // For other levels, show correct answer dialog
+          _showCorrectAnswer(context, item, reviewResponse.newLevel);
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -718,7 +723,7 @@ class _MCQCardWidgetState extends State<_MCQCardWidget> {
     _incorrectProgress = 0.0;
     _progressTimer?.cancel();
     
-    const duration = Duration(seconds: 3);
+    const duration = Duration(seconds: 2);
     const updateInterval = Duration(milliseconds: 50);
     final startTime = DateTime.now();
     
@@ -769,19 +774,71 @@ class _MCQCardWidgetState extends State<_MCQCardWidget> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20.r),
             ),
-            child: Padding(
-              padding: EdgeInsets.all(16.w),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Progress level indicator (top right)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      _buildProgressLevelIndicator(_displayLevel),
-                    ],
-                  ),
+            color: _displayLevel == 0 
+                ? Theme.of(context).colorScheme.tertiaryContainer
+                : Theme.of(context).colorScheme.surfaceContainer,
+            child: Container(
+              decoration: _displayLevel == 0
+                  ? BoxDecoration(
+                      borderRadius: BorderRadius.circular(20.r),
+                      color: Theme.of(context).colorScheme.tertiaryContainer,
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.tertiary.withOpacity(0.7),
+                        width: 2,
+                      ),
+                    )
+                  : BoxDecoration(
+                      borderRadius: BorderRadius.circular(20.r),
+                      color: Theme.of(context).colorScheme.surfaceContainer,
+                    ),
+              child: Padding(
+                padding: EdgeInsets.all(16.w),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Progress level indicator with "New Word" chip
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // "New Word" chip on the left for level 0
+                        if (_displayLevel == 0)
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.tertiaryContainer,
+                              borderRadius: BorderRadius.circular(12.r),
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.tertiary.withOpacity(0.5),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.school_outlined,
+                                  size: 14.sp,
+                                  color: Theme.of(context).colorScheme.onTertiaryContainer,
+                                ),
+                                SizedBox(width: 4.w),
+                                Text(
+                                  'New Word',
+                                  style: TextStyle(
+                                    fontSize: 11.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(context).colorScheme.onTertiaryContainer,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          const SizedBox.shrink(),
+                        // Progress level indicator on the right
+                        _buildProgressLevelIndicator(_displayLevel),
+                      ],
+                    ),
                   SizedBox(height: 12.h),
                   // Question (definition)
                   Text(
@@ -829,12 +886,14 @@ class _MCQCardWidgetState extends State<_MCQCardWidget> {
                         isCorrect: isCorrect,
                         isSelected: isSelected,
                         isRevealed: _isRevealed,
+                        isNewWord: _displayLevel == 0,
                         onTap: () => _handleAnswerTap(option),
                       ),
                     );
                   }),
                 ],
               ),
+            ),
             ),
           ),
         );
@@ -868,6 +927,7 @@ class _MCQOptionButton extends StatefulWidget {
   final bool isCorrect;
   final bool isSelected;
   final bool isRevealed;
+  final bool isNewWord;
   final VoidCallback onTap;
 
   const _MCQOptionButton({
@@ -875,6 +935,7 @@ class _MCQOptionButton extends StatefulWidget {
     required this.isCorrect,
     required this.isSelected,
     required this.isRevealed,
+    required this.isNewWord,
     required this.onTap,
   });
 
@@ -942,9 +1003,16 @@ class _MCQOptionButtonState extends State<_MCQOptionButton>
         borderColor = Theme.of(context).colorScheme.outline.withOpacity(0.3);
       }
     } else {
-      backgroundColor = Theme.of(context).colorScheme.surface;
-      textColor = Theme.of(context).colorScheme.onSurface;
-      borderColor = Theme.of(context).colorScheme.outline.withOpacity(0.3);
+      // For new word cards, use lighter background that works with tertiary container
+      if (widget.isNewWord) {
+        backgroundColor = Theme.of(context).colorScheme.surfaceContainerHighest;
+        textColor = Theme.of(context).colorScheme.onSurface;
+        borderColor = Theme.of(context).colorScheme.outline.withOpacity(0.3);
+      } else {
+        backgroundColor = Theme.of(context).colorScheme.surfaceContainer;
+        textColor = Theme.of(context).colorScheme.onSurface;
+        borderColor = Theme.of(context).colorScheme.outline.withOpacity(0.4);
+      }
     }
 
     return AnimatedBuilder(

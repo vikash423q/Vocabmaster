@@ -93,6 +93,20 @@ class ApiService {
         .toList();
   }
 
+  Future<List<Category>> getParentCategories() async {
+    final response = await _dio.get(ApiConstants.parentCategories);
+    return (response.data as List)
+        .map((json) => Category.fromJson(json))
+        .toList();
+  }
+
+  Future<List<Category>> getSubcategories(int parentId) async {
+    final response = await _dio.get(ApiConstants.subcategories(parentId));
+    return (response.data as List)
+        .map((json) => Category.fromJson(json))
+        .toList();
+  }
+
   // Review
   Future<List<DailyStackQuestion>> getDailyStack(String? date) async {
     final response = await _dio.get(
@@ -214,6 +228,14 @@ class ApiService {
       data: request.toJson(),
     );
     return ChatResponse.fromJson(response.data);
+  }
+
+  Future<WordContextResponse> generateWordContext(WordContextRequest request) async {
+    final response = await _dio.post(
+      ApiConstants.generateWordContext,
+      data: request.toJson(),
+    );
+    return WordContextResponse.fromJson(response.data);
   }
 
   // Media

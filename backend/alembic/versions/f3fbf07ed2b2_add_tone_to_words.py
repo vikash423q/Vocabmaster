@@ -19,13 +19,25 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Create Tone enum type
+    # Create Tone enum type if it doesn't exist
     op.execute("""
-        CREATE TYPE tone AS ENUM ('positive', 'negative', 'neutral')
+        DO $$ BEGIN
+            CREATE TYPE tone AS ENUM ('positive', 'negative', 'neutral');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
     """)
     
-    # Add tone column with default value
-    op.add_column('words', sa.Column('tone', sa.Enum('positive', 'negative', 'neutral', name='tone'), nullable=False, server_default='neutral'))
+    # Add tone column with default value (if it doesn't exist)
+    # Check if column exists first
+    connection = op.get_bind()
+    result = connection.execute(sa.text("""
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name='words' AND column_name='tone'
+    """))
+    if result.fetchone() is None:
+        op.add_column('words', sa.Column('tone', sa.Enum('positive', 'negative', 'neutral', name='tone'), nullable=False, server_default='neutral'))
 
 
 def downgrade() -> None:

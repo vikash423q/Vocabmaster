@@ -48,3 +48,14 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     response: str
+
+
+class WordContextRequest(BaseModel):
+    word_id: int
+
+
+class WordContextResponse(BaseModel):
+    tweets: List[str]
+    references: List[str]
+    quotes: List[str]
+    events: List[str]

@@ -13,6 +13,7 @@ _$CategoryImpl _$$CategoryImplFromJson(Map<String, dynamic> json) =>
       description: json['description'] as String?,
       parentCategoryId: (json['parent_category_id'] as num?)?.toInt(),
       importanceWeight: (json['importance_weight'] as num?)?.toDouble() ?? 5.0,
+      wordCount: (json['word_count'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$$CategoryImplToJson(_$CategoryImpl instance) =>
@@ -22,4 +23,5 @@ Map<String, dynamic> _$$CategoryImplToJson(_$CategoryImpl instance) =>
       'description': instance.description,
       'parent_category_id': instance.parentCategoryId,
       'importance_weight': instance.importanceWeight,
+      'word_count': instance.wordCount,
     };

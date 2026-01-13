@@ -159,10 +159,22 @@ async def submit_assessment(
     if not scores:
         raise ValueError("No valid responses")
     
-    # Calculate average (user's current level)
-    calculated_level = sum(scores) / len(scores)
+    # Calculate average of new assessment
+    new_assessment_score = sum(scores) / len(scores)
     
     # Clamp between 1.0 and 10.0
+    new_assessment_score = max(1.0, min(10.0, new_assessment_score))
+    
+    # Calculate weighted average: previous_score * 0.8 + new_score * 0.2
+    # This gives more weight to historical performance and prevents drastic changes
+    if user.current_level is not None:
+        previous_level = float(user.current_level)
+        calculated_level = (previous_level * 0.8) + (new_assessment_score * 0.2)
+    else:
+        # First assessment: use the new score directly
+        calculated_level = new_assessment_score
+    
+    # Clamp final level between 1.0 and 10.0
     calculated_level = max(1.0, min(10.0, calculated_level))
     
     # Update user's current_level

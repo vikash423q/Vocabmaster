@@ -231,6 +231,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const SizedBox(height: 16),
+          // Help & Info
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              'Help & Information',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            child: ListTile(
+              leading: const Icon(Icons.help_outline),
+              title: const Text('How This Works?'),
+              subtitle: const Text('Learn about VocabMaster\'s features'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.pushNamed(context, AppRouter.howItWorks);
+              },
+            ),
+          ),
+          const SizedBox(height: 16),
           // Account actions
           Card(
             margin: const EdgeInsets.symmetric(horizontal: 16),

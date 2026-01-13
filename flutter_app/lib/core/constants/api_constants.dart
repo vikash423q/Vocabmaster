@@ -17,6 +17,8 @@ class ApiConstants {
   static String wordReviewPage(int id) => '$words/$id/review-page';
   static const String wordsBatch = '$words/batch';
   static const String categories = '$words/categories/list';
+  static const String parentCategories = '$words/categories/parents';
+  static String subcategories(int parentId) => '$words/categories/subcategories/$parentId';
   
   // Review
   static const String dailyStack = '$apiPrefix/daily-stack';
@@ -33,6 +35,7 @@ class ApiConstants {
   static const String explainWord = '$apiPrefix/ai/explain-word';
   static const String generateStory = '$apiPrefix/ai/generate-story';
   static const String chat = '$apiPrefix/ai/chat';
+  static const String generateWordContext = '$apiPrefix/ai/generate-word-context';
   
   // Media
   static String wordMedia(int id) => '$words/$id/media';
@@ -42,4 +45,8 @@ class ApiConstants {
   static const String assessmentSubmit = '$apiPrefix/assessment/submit';
   static const String stackRecommendations = '$apiPrefix/assessment/recommendations';
   static String markWordKnown(int id) => '$apiPrefix/assessment/mark-known/$id';
+  
+  // Games
+  static const String games = '$apiPrefix/games';
+  static const String iceburstStart = '$games/iceburst/start';
 }

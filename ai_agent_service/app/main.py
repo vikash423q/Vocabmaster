@@ -62,6 +62,10 @@ class GenerateWordDetailsRequest(BaseModel):
     word: str
 
 
+class WordContextRequest(BaseModel):
+    word: str
+
+
 @app.get("/")
 async def root():
     return {"message": "VocabMaster AI Agent Service", "version": "1.0.0"}
@@ -191,4 +195,21 @@ async def generate_word_details(request: GenerateWordDetailsRequest):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error generating word details: {str(e)}"
+        )
+
+
+@app.post("/generate-word-context")
+async def generate_word_context(request: WordContextRequest):
+    """Generate contextual content for a word (tweets, references, quotes, events)."""
+    try:
+        result = agent.generate_word_context(word=request.word)
+        return result
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        logger.error(f"Error generating word context: {str(e)}")
+        logger.error(f"Traceback: {error_trace}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating word context: {str(e)}"
         )

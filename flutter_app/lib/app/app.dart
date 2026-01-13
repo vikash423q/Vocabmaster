@@ -76,14 +76,14 @@ class VocabMasterAppState extends State<VocabMasterApp> {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-        return MaterialApp(
-          title: 'VocabMaster',
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: _themeMode,
-          debugShowCheckedModeBanner: false,
-          onGenerateRoute: AppRouter.generateRoute,
-          initialRoute: AppRouter.splash,
+    return MaterialApp(
+      title: 'VocabMaster',
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: _themeMode,
+      debugShowCheckedModeBanner: false,
+      onGenerateRoute: AppRouter.generateRoute,
+      initialRoute: AppRouter.splash,
         );
       },
     );

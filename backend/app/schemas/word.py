@@ -65,6 +65,7 @@ class CategorySchema(BaseModel):
     description: Optional[str] = None
     parent_category_id: Optional[int] = None
     importance_weight: float = 5.0
+    word_count: int = 0
 
     class Config:
         from_attributes = True

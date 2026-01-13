@@ -17,19 +17,9 @@ class SubcategoriesScreen extends StatefulWidget {
   State<SubcategoriesScreen> createState() => _SubcategoriesScreenState();
 }
 
-class _SubcategoryWithCount {
-  final Category category;
-  final int wordCount;
-
-  _SubcategoryWithCount({
-    required this.category,
-    required this.wordCount,
-  });
-}
-
 class _SubcategoriesScreenState extends State<SubcategoriesScreen> {
   final ApiService _apiService = getIt<ApiService>();
-  List<_SubcategoryWithCount> _subcategories = [];
+  List<Category> _subcategories = [];
   bool _loading = true;
   String? _error;
 
@@ -39,35 +29,6 @@ class _SubcategoriesScreenState extends State<SubcategoriesScreen> {
     _loadSubcategories();
   }
 
-  Future<int> _getWordCount(int categoryId) async {
-    try {
-      // Fetch words with pagination to count them
-      // API has max limit of 500, so we'll fetch in batches
-      const maxLimit = 500;
-      int totalCount = 0;
-      int offset = 0;
-      bool hasMore = true;
-      
-      while (hasMore) {
-        final words = await _apiService.getWords({
-          'category_id': categoryId,
-          'limit': maxLimit,
-          'offset': offset,
-        });
-        
-        totalCount += words.length;
-        offset += words.length;
-        hasMore = words.length >= maxLimit;
-      }
-      
-      return totalCount;
-    } catch (e) {
-      // Log error for debugging
-      debugPrint('Error getting word count for category $categoryId: $e');
-      return 0;
-    }
-  }
-
   Future<void> _loadSubcategories() async {
     setState(() {
       _loading = true;
@@ -75,29 +36,15 @@ class _SubcategoriesScreenState extends State<SubcategoriesScreen> {
     });
 
     try {
-      final categories = await _apiService.getCategories();
-      // Filter to subcategories of this parent
-      final subcategories = categories
-          .where((c) => c.parentCategoryId == widget.parentCategory.id)
-          .toList();
+      final subcategories = await _apiService.getSubcategories(widget.parentCategory.id);
       
       // If no subcategories, use the parent category itself
       final categoriesToShow = subcategories.isEmpty 
           ? [widget.parentCategory] 
           : subcategories;
       
-      // Get word counts for each category
-      final List<_SubcategoryWithCount> subcategoriesWithCounts = [];
-      for (final category in categoriesToShow) {
-        final wordCount = await _getWordCount(category.id);
-        subcategoriesWithCounts.add(_SubcategoryWithCount(
-          category: category,
-          wordCount: wordCount,
-        ));
-      }
-      
       setState(() {
-        _subcategories = subcategoriesWithCounts;
+        _subcategories = categoriesToShow;
         _loading = false;
       });
     } catch (e) {
@@ -212,8 +159,7 @@ class _SubcategoriesScreenState extends State<SubcategoriesScreen> {
                       padding: EdgeInsets.all(16.w),
                       itemCount: _subcategories.length,
                       itemBuilder: (context, index) {
-                        final item = _subcategories[index];
-                        final subcategory = item.category;
+                        final subcategory = _subcategories[index];
                         return Card(
                           margin: EdgeInsets.only(bottom: 8.h),
                           child: Padding(
@@ -242,10 +188,11 @@ class _SubcategoriesScreenState extends State<SubcategoriesScreen> {
                                         borderRadius: BorderRadius.circular(12.r),
                                       ),
                                       child: Text(
-                                        '${item.wordCount}',
+                                        '${subcategory.wordCount}',
                                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                               color: Theme.of(context).colorScheme.onPrimaryContainer,
                                               fontWeight: FontWeight.bold,
+                                              fontSize: 11.sp,
                                             ),
                                       ),
                                     ),
@@ -257,8 +204,8 @@ class _SubcategoriesScreenState extends State<SubcategoriesScreen> {
                                     Expanded(
                                       child: OutlinedButton.icon(
                                         onPressed: () => _addCategoryToStack(subcategory.id),
-                                        icon: const Icon(Icons.add_circle_outline, size: 18),
-                                        label: const Text('Add to Stack'),
+                                        icon: Icon(Icons.add_circle_outline, size: 18.sp),
+                                        label: Text('Add to Stack', style: TextStyle(fontSize: 11.sp)),
                                         style: OutlinedButton.styleFrom(
                                           padding: EdgeInsets.symmetric(vertical: 8.h),
                                           minimumSize: Size.zero,
@@ -278,12 +225,15 @@ class _SubcategoriesScreenState extends State<SubcategoriesScreen> {
                                             },
                                           );
                                         },
-                                        icon: const Icon(Icons.visibility, size: 18),
-                                        label: const Text('View Words'),
+                                        icon: Icon(Icons.visibility, size: 18.sp),
+                                        label: Text('View Words', style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.bold)),
                                         style: ElevatedButton.styleFrom(
+                                          backgroundColor: Theme.of(context).colorScheme.primary,
+                                          foregroundColor: Theme.of(context).colorScheme.onPrimary,
                                           padding: EdgeInsets.symmetric(vertical: 8.h),
                                           minimumSize: Size.zero,
                                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                          elevation: 2,
                                         ),
                                       ),
                                     ),
